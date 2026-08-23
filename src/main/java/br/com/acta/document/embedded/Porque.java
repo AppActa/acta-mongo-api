@@ -1,6 +1,5 @@
 package br.com.acta.document.embedded;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

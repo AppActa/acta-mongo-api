@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Pergunta {
     @Field("id_pergunta")
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @Field("texto")
     private String titulo;

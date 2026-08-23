@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,13 +29,13 @@ public class RespostaFormulario extends BaseDocument {
     private Long idCiclo;
 
     @Field("id_formulario")
-    private String idFormulario;
+    private UUID idFormulario;
 
     @Field("id_usuario")
     private Long idUsuario;
 
     @Field("respostas")
-    private List<RespostaPergunta> resposta;
+    private List<RespostaPergunta> respostas;
 
     @Field("respondido_em")
     private OffsetDateTime respondidoEm;
