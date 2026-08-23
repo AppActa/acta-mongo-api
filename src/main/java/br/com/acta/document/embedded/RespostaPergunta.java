@@ -13,6 +13,5 @@ import java.util.UUID;
 public class RespostaPergunta {
     @Field("id_pergunta")
     private UUID idPergunta;
-
     private Object resposta;
 }
