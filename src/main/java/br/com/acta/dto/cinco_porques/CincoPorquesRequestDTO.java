@@ -29,17 +29,11 @@ public record CincoPorquesRequestDTO(
     @JsonIgnore
     @AssertTrue(message = "{validation.cincoPorques.ordem.sequencial}")
     public boolean isSequenciaDosPorquesValida() {
-        if (porques == null) {
-            return true;
-        }
-        if (porques.isEmpty() || porques.stream().anyMatch(item -> item == null || item.ordem() == null)) {
-            return false;
-        }
+        if (porques.isEmpty() || porques.stream().anyMatch(item -> item == null || item.ordem() == null)) return false;
 
         long quantidade = porques.size();
         Set<Integer> ordens = porques.stream().map(PorqueRequestDTO::ordem).collect(Collectors.toSet());
 
-        return ordens.size() == quantidade
-                && IntStream.rangeClosed(1, Math.toIntExact(quantidade)).allMatch(ordens::contains);
+        return ordens.size() == quantidade && IntStream.rangeClosed(1, Math.toIntExact(quantidade)).allMatch(ordens::contains);
     }
 }
