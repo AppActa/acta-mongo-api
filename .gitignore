@@ -32,4 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 src/main/resources/docs
-/src/main/java/br/com/acta/validation/RespostaFormularioValidator.java
+src/main/java/br/com/acta/validation/
