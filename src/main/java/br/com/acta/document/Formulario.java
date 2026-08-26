@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,5 +46,5 @@ public class Formulario extends AuditoriaBase {
     private List<Long> idsUsuariosDestinatarios;
 
     @Field("publicado_em")
-    private OffsetDateTime publicadoEm;
+    private Instant publicadoEm;
 }
