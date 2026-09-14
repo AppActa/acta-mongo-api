@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,5 +38,5 @@ public class RespostaFormulario extends BaseDocument {
     private List<RespostaPergunta> respostas;
 
     @Field("respondido_em")
-    private OffsetDateTime respondidoEm;
+    private Instant respondidoEm;
 }

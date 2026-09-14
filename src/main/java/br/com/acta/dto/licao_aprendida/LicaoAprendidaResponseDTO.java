@@ -2,7 +2,7 @@ package br.com.acta.dto.licao_aprendida;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,8 +19,8 @@ public record LicaoAprendidaResponseDTO(
         String area,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-        OffsetDateTime criadoEm,
+        Instant criadoEm,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-        OffsetDateTime atualizadoEm
+        Instant atualizadoEm
 ) {
 }
