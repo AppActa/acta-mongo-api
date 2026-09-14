@@ -19,6 +19,9 @@ import java.util.List;
         def = "{'id_empresa': 1, 'id_ciclo': 1, 'criado_em': -1}"
 )
 public class LicaoAprendida extends AuditoriaBase {
+    @Field("id_usuario")
+    private Long idUsuario;
+
     @Field("id_empresa")
     private Long idEmpresa;
 

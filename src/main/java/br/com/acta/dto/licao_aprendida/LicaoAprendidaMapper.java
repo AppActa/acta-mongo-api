@@ -11,6 +11,7 @@ public interface LicaoAprendidaMapper
 
     @Mapping(target = "idEmpresa", ignore = true)
     @Mapping(target = "idCiclo", ignore = true)
+    @Mapping(target = "idUsuario", ignore = true)
     @Override
     LicaoAprendida toEntity(LicaoAprendidaRequestDTO dto);
 }
