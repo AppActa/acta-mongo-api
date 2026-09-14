@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -39,5 +39,5 @@ public class Relatorio extends AuditoriaBase {
     private Long idAnexo;
 
     @Field("publicado_em")
-    private OffsetDateTime publicadoEm;
+    private Instant publicadoEm;
 }

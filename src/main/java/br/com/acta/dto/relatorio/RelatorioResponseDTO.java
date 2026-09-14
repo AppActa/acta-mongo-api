@@ -5,7 +5,7 @@ import br.com.acta.document.enums.StatusRelatorio;
 import br.com.acta.document.enums.TipoRelatorio;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record RelatorioResponseDTO(
@@ -21,10 +21,10 @@ public record RelatorioResponseDTO(
         Long idAnexo,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-        OffsetDateTime criadoEm,
+        Instant criadoEm,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-        OffsetDateTime atualizadoEm,
+        Instant atualizadoEm,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
-        OffsetDateTime publicadoEm
+        Instant publicadoEm
 ) {
 }
