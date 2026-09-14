@@ -1,9 +1,6 @@
 package br.com.acta.common.handler;
 
-import br.com.acta.common.handler.exception.PgApiException;
-import br.com.acta.common.handler.exception.ImmutableFieldException;
-import br.com.acta.common.handler.exception.InexistentFieldException;
-import br.com.acta.common.handler.exception.ModelNotFoundException;
+import br.com.acta.common.handler.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +22,9 @@ public class GlobalExceptionHandler {
         return erro(HttpStatus.BAD_GATEWAY, List.of(pae.getMessage()));
     }
 
-    @ExceptionHandler(ModelNotFoundException.class)
-    public ResponseEntity<ErroResponse> handleModelNotFound(ModelNotFoundException mnfe) {
-        return erro(HttpStatus.NOT_FOUND, List.of(mnfe.getMessage()));
+    @ExceptionHandler(DocumentNotFoundException.class)
+    public ResponseEntity<ErroResponse> handleModelNotFound(DocumentNotFoundException dnfe) {
+        return erro(HttpStatus.NOT_FOUND, List.of(dnfe.getMessage()));
     }
 
     @ExceptionHandler({ImmutableFieldException.class, InexistentFieldException.class})
