@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '26'
+          java-version: '19'
           cache: maven
 
       - name: compilar e executar testes
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '26'
+          java-version: '19'
           cache: maven
 
       - name: compilar para analise
