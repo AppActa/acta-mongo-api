@@ -28,8 +28,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({ImmutableFieldException.class, InexistentFieldException.class})
-    public ResponseEntity<ErroResponse> handleInvalidPatchField(RuntimeException exception) {
-        return erro(HttpStatus.BAD_REQUEST, List.of(exception.getMessage()));
+    public ResponseEntity<ErroResponse> handleInvalidPatchField(RuntimeException re) {
+        return erro(HttpStatus.BAD_REQUEST, List.of(re.getMessage()));
+    }
+
+    @ExceptionHandler(ClassCastException.class)
+    public ResponseEntity<ErroResponse> handleInvalidRequest(ClassCastException cce) {
+        return erro(HttpStatus.BAD_REQUEST, List.of("O corpo da requisição possui um valor com tipo inválido"));
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErroResponse> handleInvalidRequest(InvalidRequestException ire) {
+        return erro(HttpStatus.BAD_REQUEST, List.of(ire.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
