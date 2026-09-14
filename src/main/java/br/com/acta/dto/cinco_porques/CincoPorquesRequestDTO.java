@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,10 @@ public record CincoPorquesRequestDTO(
         @NotNull(message = "{validation.cincoPorques.idCausaIshikawa.notnull}")
         @Schema
         UUID idCausaIshikawa,
+
+        @Positive(message = "{validation.cincoPorques.idCausaRaiz.positive}")
+        @Schema
+        Long idCausaRaiz,
 
         @NotBlank(message = "{validation.cincoPorques.hipotese.notblank}")
         @Schema

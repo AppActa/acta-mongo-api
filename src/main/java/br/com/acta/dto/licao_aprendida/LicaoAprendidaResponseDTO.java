@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record LicaoAprendidaResponseDTO(
         UUID id,
+        Long idUsuario,
         Long idEmpresa,
         Long idCiclo,
         String titulo,
