@@ -100,6 +100,8 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
         if (tipo == TipoFormulario.ISHIKAWA && idIshikawa == null)
             throw new InvalidRequestException("O campo idIshikawa é obrigatório para formulários do tipo ISHIKAWA");
 
+        if (idIshikawa == null) return;
+
         Ishikawa ishikawa = ishikawaService.getEntity(idIshikawa);
         if (!idCiclo.equals(ishikawa.getIdCiclo()))
             throw new InvalidRequestException("O Ishikawa informado não pertence ao ciclo do formulário");
