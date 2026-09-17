@@ -10,7 +10,6 @@ import br.com.acta.document.RespostaFormulario;
 import br.com.acta.document.embedded.RespostaPergunta;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioMapper;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioRequestDTO;
-import br.com.acta.dto.resposta_formulario.RespostaFormularioResponseDTO;
 import br.com.acta.dto.resposta_formulario.RespostaPerguntaMapper;
 import br.com.acta.dto.resposta_formulario.RespostaPerguntaRequestDTO;
 import br.com.acta.repository.RespostaFormularioRepository;
@@ -23,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -198,18 +195,10 @@ class RespostaFormularioServiceTest {
     }
 
     @Test
-    void deveAlterarRespondidoEmNoPatch() {
-        UUID id = UUID.randomUUID();
-        RespostaFormulario resposta = new RespostaFormulario();
-        RespostaFormularioResponseDTO esperado = mock(RespostaFormularioResponseDTO.class);
-        when(authService.atual()).thenReturn(usuario);
-        when(repository.findByIdAndIdEmpresa(id, 10L)).thenReturn(Optional.of(resposta));
-        when(repository.save(resposta)).thenReturn(resposta);
-        when(mapper.toResponse(resposta)).thenReturn(esperado);
-
-        assertEquals(esperado, service.patch(id, Map.of("respondidoEm", "2026-08-23T18:00:00Z")));
-
-        assertEquals(Instant.parse("2026-08-23T18:00:00Z"), resposta.getRespondidoEm());
+    void deveImpedirAlteracaoDeRespondidoEmNoPatch() {
+        assertThrows(ImmutableFieldException.class,
+                () -> service.patch(UUID.randomUUID(), Map.of("respondidoEm", "2026-08-23T18:00:00Z")));
+        verify(repository, never()).save(any());
     }
 
     private Formulario formulario(UUID id) {
