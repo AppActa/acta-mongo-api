@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -98,6 +100,12 @@ public class PgApiClient {
             if (usuario == null) throw new PgApiException();
             return usuario;
         } catch (RestClientResponseException rcre) {
+            if (rcre.getStatusCode().value() == 401)
+                throw new BadCredentialsException("O ID Token do Firebase não existe ou está inválido");
+
+            if (rcre.getStatusCode().value() == 403)
+                throw new AccessDeniedException("Acesso negado");
+
             throw traduzirErro(rcre);
         } catch (ResourceAccessException rae) {
             throw new PgApiException("Não foi possível acessar a API PostgreSQL");

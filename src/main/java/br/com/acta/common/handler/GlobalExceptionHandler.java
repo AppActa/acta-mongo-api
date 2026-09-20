@@ -2,10 +2,14 @@ package br.com.acta.common.handler;
 
 import br.com.acta.common.handler.exception.*;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +29,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DocumentNotFoundException.class)
     public ResponseEntity<ErroResponse> handleModelNotFound(DocumentNotFoundException dnfe) {
         return erro(HttpStatus.NOT_FOUND, List.of(dnfe.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResponse> handleAccessDenied(AccessDeniedException ade) {
+        return erro(HttpStatus.FORBIDDEN, List.of(ade.getMessage()));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErroResponse> handleMethodNotAllowed() {
+        return erro(HttpStatus.METHOD_NOT_ALLOWED, List.of("Método HTTP não permitido para este recurso"));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErroResponse> handleUnsupportedMediaType() {
+        return erro(HttpStatus.UNSUPPORTED_MEDIA_TYPE, List.of("Tipo de conteúdo não suportado"));
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ErroResponse> handleDuplicateKey() {
+        return erro(HttpStatus.CONFLICT, List.of("Já existe um registro com os dados informados"));
     }
 
     @ExceptionHandler({ImmutableFieldException.class, InexistentFieldException.class})
