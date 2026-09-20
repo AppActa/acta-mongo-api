@@ -24,8 +24,8 @@ public class PgApiClient {
     public PgApiClient(
             ObjectMapper objectMapper,
             @Value("${acta.pg-api.base-url}") String baseUrl,
-            @Value("${acta.pg-api.connect-timeout:3s}") Duration connectTimeout,
-            @Value("${acta.pg-api.read-timeout:5s}") Duration readTimeout
+            @Value("${acta.pg-api.connect-timeout}") Duration connectTimeout,
+            @Value("${acta.pg-api.read-timeout}") Duration readTimeout
     ) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(connectTimeout);
@@ -40,7 +40,7 @@ public class PgApiClient {
 
         try {
             EmpresaPgResponse empresa = restClient.get()
-                    .uri("/empresa/{id}", idEmpresa)
+                    .uri("empresa/{id}", idEmpresa)
                     .retrieve()
                     .body(EmpresaPgResponse.class);
 
@@ -58,7 +58,7 @@ public class PgApiClient {
 
         try {
             CicloPgResponse ciclo = restClient.get()
-                    .uri("/ciclo/{id}", idCiclo)
+                    .uri("ciclo/{id}", idCiclo)
                     .retrieve()
                     .body(CicloPgResponse.class);
 
@@ -76,7 +76,7 @@ public class PgApiClient {
 
         try {
             UsuarioPgResponse usuario = restClient.get()
-                    .uri("/usuario/{id}", idUsuario)
+                    .uri("usuario/{id}", idUsuario)
                     .retrieve()
                     .body(UsuarioPgResponse.class);
 
@@ -91,7 +91,7 @@ public class PgApiClient {
 
     public UsuarioAutenticado buscarUsuarioAtual(String authorization) {
         try {
-            UsuarioAutenticado usuario = restClient.get().uri("/api/v1/me")
+            UsuarioAutenticado usuario = restClient.get().uri("me")
                     .header(HttpHeaders.AUTHORIZATION, authorization)
                     .retrieve().body(UsuarioAutenticado.class);
 
