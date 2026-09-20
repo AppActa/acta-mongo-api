@@ -7,7 +7,6 @@ import br.com.acta.common.utils.PatchConfig;
 import br.com.acta.common.utils.Validador;
 import br.com.acta.common.utils.ConversorObject;
 import br.com.acta.document.Ishikawa;
-import br.com.acta.document.embedded.CausaIshikawa;
 import br.com.acta.dto.ishikawa.IshikawaMapper;
 import br.com.acta.dto.ishikawa.IshikawaRequestDTO;
 import br.com.acta.dto.ishikawa.IshikawaResponseDTO;
