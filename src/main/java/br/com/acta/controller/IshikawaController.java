@@ -1,5 +1,6 @@
 package br.com.acta.controller;
 
+import br.com.acta.common.config.swagger.openapi.IshikawaOpenapi;
 import br.com.acta.dto.ishikawa.IshikawaRequestDTO;
 import br.com.acta.dto.ishikawa.IshikawaResponseDTO;
 import br.com.acta.service.IshikawaService;
@@ -19,34 +20,39 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-public class IshikawaController {
+public class IshikawaController implements IshikawaOpenapi {
     private final IshikawaService service;
 
     @GetMapping("/ciclos/{idCiclo}/ishikawas")
+    @Override
     public ResponseEntity<List<IshikawaResponseDTO>> buscar(@PathVariable @Positive Long idCiclo) {
         List<IshikawaResponseDTO> dtos = service.buscarPorCiclo(idCiclo);
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/ishikawas/{idIshikawa}")
+    @Override
     public ResponseEntity<IshikawaResponseDTO> buscar(@PathVariable UUID idIshikawa) {
         IshikawaResponseDTO dto = service.buscar(idIshikawa);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/ciclos/{idCiclo}/ishikawas")
+    @Override
     public ResponseEntity<IshikawaResponseDTO> inserir(@PathVariable @Positive Long idCiclo, @Valid @RequestBody IshikawaRequestDTO dto) {
         IshikawaResponseDTO ishikawa = service.inserir(idCiclo, dto);
         return ResponseEntity.status(201).body(ishikawa);
     }
 
     @PatchMapping("/ishikawas/{idIshikawa}")
+    @Override
     public ResponseEntity<IshikawaResponseDTO> patch(@PathVariable UUID idIshikawa, @RequestBody Map<String, Object> campos) {
         IshikawaResponseDTO dto = service.patch(idIshikawa, campos);
         return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/ishikawas/{idIshikawa}")
+    @Override
     public ResponseEntity<Void> excluir(@PathVariable UUID idIshikawa) {
         service.excluir(idIshikawa);
         return ResponseEntity.noContent().build();

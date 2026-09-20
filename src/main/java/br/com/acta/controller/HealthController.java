@@ -1,5 +1,6 @@
 package br.com.acta.controller;
 
+import br.com.acta.common.config.swagger.openapi.HealthOpenapi;
 import br.com.acta.dto.health.HealthResponseDTO;
 import br.com.acta.dto.health.HealthStatus;
 import br.com.acta.service.HealthService;
@@ -13,10 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "api/v1/health", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-public class HealthController {
+public class HealthController implements HealthOpenapi {
     private final HealthService service;
 
     @GetMapping
+    @Override
     public ResponseEntity<HealthResponseDTO> verificar() {
         HealthResponseDTO dto = service.verificar();
 
