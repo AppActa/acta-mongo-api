@@ -1,4 +1,4 @@
-﻿package br.com.acta.dto.resposta_formulario;
+package br.com.acta.dto.resposta_formulario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;

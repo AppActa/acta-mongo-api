@@ -2,12 +2,15 @@ package br.com.acta.service;
 
 import br.com.acta.common.config.security.UsuarioAutenticado;
 import br.com.acta.common.handler.exception.DocumentNotFoundException;
+import br.com.acta.common.handler.exception.InvalidRequestException;
+import br.com.acta.common.handler.exception.DuplicateFormResponseException;
 import br.com.acta.common.utils.ConversorObject;
 import br.com.acta.common.utils.PatchConfig;
 import br.com.acta.common.utils.Validador;
 import br.com.acta.common.validation.RespostaFormularioValidator;
 import br.com.acta.document.Formulario;
 import br.com.acta.document.RespostaFormulario;
+import br.com.acta.document.enums.StatusFormulario;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioMapper;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioRequestDTO;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioResponseDTO;
@@ -58,19 +61,32 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
         UsuarioAutenticado usuario = atual();
         Formulario formulario = formularioService.getEntity(idFormulario);
 
-        if (!usuario.idUsuario().equals(dto.idUsuario()))
-            throw new AccessDeniedException("O usuário informado não corresponde ao usuário autenticado");
+        if (formulario.getStatus() != StatusFormulario.ATIVO)
+            throw new InvalidRequestException("O formulário não está publicado e não aceita respostas");
+
+        if (formulario.getIdsUsuariosDestinatarios() != null && !formulario.getIdsUsuariosDestinatarios().isEmpty() && !formulario.getIdsUsuariosDestinatarios().contains(usuario.idUsuario()))
+            throw new AccessDeniedException("O usuário autenticado não está entre os destinatários deste formulário");
+
+        if (repo.existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(formulario.getIdEmpresa(), formulario.getIdCiclo(), formulario.getId(), usuario.idUsuario()))
+            throw new DuplicateFormResponseException();
 
         validator.validar(formulario, dto.respostas());
 
         RespostaFormulario resposta = mapper.toEntity(dto);
-        resposta.setIdEmpresa(usuario.idEmpresa());
+        resposta.setIdEmpresa(formulario.getIdEmpresa());
         resposta.setIdCiclo(formulario.getIdCiclo());
         resposta.setIdFormulario(idFormulario);
         resposta.setIdUsuario(usuario.idUsuario());
         resposta.setRespondidoEm(Instant.now());
 
-        RespostaFormulario salva = repo.save(resposta);
+        RespostaFormulario salva;
+        try {
+            salva = repo.save(resposta);
+        } catch (DuplicateKeyException dke) {
+            if (dke.getMessage() != null && dke.getMessage().contains("uk_resposta_formulario_empresa_ciclo_formulario_usuario"))
+                throw new DuplicateFormResponseException(dke);
+            throw dke;
+        }
         return mapper.toResponse(salva);
     }
 
@@ -92,7 +108,14 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
             resposta.setRespostas(respostaPerguntaMapper.toEntityList(respostas));
         }
 
-        RespostaFormulario salva = repo.save(resposta);
+        RespostaFormulario salva;
+        try {
+            salva = repo.save(resposta);
+        } catch (DuplicateKeyException exception) {
+            if (exception.getMessage() != null && exception.getMessage().contains("uk_resposta_formulario_empresa_ciclo_formulario_usuario"))
+                throw new DuplicateFormResponseException(exception);
+            throw exception;
+        }
         return mapper.toResponse(salva);
     }
 }
