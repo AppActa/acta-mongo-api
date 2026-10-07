@@ -51,6 +51,11 @@ public class GlobalExceptionHandler {
         return erro(HttpStatus.CONFLICT, List.of("Já existe um registro com os dados informados"));
     }
 
+    @ExceptionHandler(DuplicateFormResponseException.class)
+    public ResponseEntity<ErroResponse> handleDuplicateFormResponse(DuplicateFormResponseException dfre) {
+        return erro(HttpStatus.CONFLICT, List.of(dfre.getMessage()));
+    }
+
     @ExceptionHandler({ImmutableFieldException.class, InexistentFieldException.class})
     public ResponseEntity<ErroResponse> handleInvalidPatchField(RuntimeException re) {
         return erro(HttpStatus.BAD_REQUEST, List.of(re.getMessage()));
@@ -58,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ClassCastException.class)
     public ResponseEntity<ErroResponse> handleInvalidRequest(ClassCastException cce) {
-        return erro(HttpStatus.BAD_REQUEST, List.of("O corpo da requisição possui um valor com tipo inválido"));
+        return erro(HttpStatus.BAD_REQUEST, List.of("O corpo da requisiÃ§Ã£o possui um valor com tipo invÃ¡lido"));
     }
 
     @ExceptionHandler(InvalidRequestException.class)
@@ -83,12 +88,12 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class
     })
     public ResponseEntity<ErroResponse> handleInvalidRequest() {
-        return erro(HttpStatus.BAD_REQUEST, List.of("A requisição informada é inválida"));
+        return erro(HttpStatus.BAD_REQUEST, List.of("A requisiÃ§Ã£o informada Ã© invÃ¡lida"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResponse> handleNoResourceFound() {
-        return erro(HttpStatus.NOT_FOUND, List.of("O recurso solicitado não foi encontrado"));
+        return erro(HttpStatus.NOT_FOUND, List.of("O recurso solicitado nÃ£o foi encontrado"));
     }
 
     @ExceptionHandler(Exception.class)

@@ -115,6 +115,8 @@ Todas as rotas abaixo exigem Firebase ID Token, exceto `GET /api/v1/health`.
 | --- | --- |
 | Formulários | `GET/POST /api/v1/ciclos/{idCiclo}/formularios`, `GET/PATCH/DELETE /api/v1/formularios/{idFormulario}` |
 | Respostas de formulário | `GET/POST /api/v1/formularios/{idFormulario}/respostas`, `GET/PATCH/DELETE /api/v1/respostas-formulario/{idRespostaFormulario}` |
+
+Cada usuário autenticado pode enviar uma única resposta por formulário. O formulário precisa estar publicado (`ATIVO`). Se `idsUsuariosDestinatarios` estiver preenchido, somente usuários listados podem responder; lista vazia ou ausente permite resposta a todos os usuários da empresa. O usuário responsável é sempre obtido da autenticação e o corpo contém somente as respostas às perguntas. Uma tentativa duplicada retorna HTTP 409.
 | Ishikawa | `GET/POST /api/v1/ciclos/{idCiclo}/ishikawas`, `GET/PATCH/DELETE /api/v1/ishikawas/{idIshikawa}` |
 | 5 Porquês | `GET/POST /api/v1/ishikawas/{idIshikawa}/cinco-porques`, `GET/PATCH/DELETE /api/v1/cinco-porques/{idCincoPorques}` |
 | Lições aprendidas | `GET/POST /api/v1/ciclos/{idCiclo}/licoes-aprendidas`, `GET/PATCH/DELETE /api/v1/licoes-aprendidas/{idLicaoAprendida}` |
