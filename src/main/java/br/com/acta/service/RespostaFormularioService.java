@@ -18,6 +18,7 @@ import br.com.acta.dto.resposta_formulario.RespostaPerguntaMapper;
 import br.com.acta.dto.resposta_formulario.RespostaPerguntaRequestDTO;
 import br.com.acta.repository.RespostaFormularioRepository;
 import br.com.acta.service.base.BaseService;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
             salva = repo.save(resposta);
         } catch (DuplicateKeyException dke) {
             if (dke.getMessage() != null && dke.getMessage().contains("uk_resposta_formulario_empresa_ciclo_formulario_usuario"))
-                throw new DuplicateFormResponseException(dke);
+                throw new DuplicateFormResponseException();
             throw dke;
         }
         return mapper.toResponse(salva);
@@ -111,10 +112,10 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
         RespostaFormulario salva;
         try {
             salva = repo.save(resposta);
-        } catch (DuplicateKeyException exception) {
-            if (exception.getMessage() != null && exception.getMessage().contains("uk_resposta_formulario_empresa_ciclo_formulario_usuario"))
-                throw new DuplicateFormResponseException(exception);
-            throw exception;
+        } catch (DuplicateKeyException dke) {
+            if (dke.getMessage() != null && dke.getMessage().contains("uk_resposta_formulario_empresa_ciclo_formulario_usuario"))
+                throw new DuplicateFormResponseException();
+            throw dke;
         }
         return mapper.toResponse(salva);
     }
