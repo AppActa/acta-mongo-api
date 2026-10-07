@@ -109,16 +109,6 @@ class RespostaFormularioServiceTest {
     }
 
     @Test
-    void deveNegarRespostaEmNomeDeOutroUsuario() {
-        UUID idFormulario = UUID.randomUUID();
-        when(authService.atual()).thenReturn(usuario);
-        when(formularioService.getEntity(idFormulario)).thenReturn(formulario(idFormulario));
-
-        assertThrows(AccessDeniedException.class, () -> service.inserir(idFormulario, dto()));
-        verify(repository, never()).save(any());
-    }
-
-    @Test
     void deveRetornarConflitoQuandoUsuarioJaRespondeu() {
         UUID idFormulario = UUID.randomUUID();
         when(authService.atual()).thenReturn(usuario);

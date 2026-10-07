@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ClassCastException.class)
     public ResponseEntity<ErroResponse> handleInvalidRequest(ClassCastException cce) {
-        return erro(HttpStatus.BAD_REQUEST, List.of("O corpo da requisiÃ§Ã£o possui um valor com tipo invÃ¡lido"));
+        return erro(HttpStatus.BAD_REQUEST, List.of("O corpo da requisição possui um valor com tipo inválido"));
     }
 
     @ExceptionHandler(InvalidRequestException.class)
@@ -88,12 +88,12 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class
     })
     public ResponseEntity<ErroResponse> handleInvalidRequest() {
-        return erro(HttpStatus.BAD_REQUEST, List.of("A requisiÃ§Ã£o informada Ã© invÃ¡lida"));
+        return erro(HttpStatus.BAD_REQUEST, List.of("A requisição informada é inválida"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResponse> handleNoResourceFound() {
-        return erro(HttpStatus.NOT_FOUND, List.of("O recurso solicitado nÃ£o foi encontrado"));
+        return erro(HttpStatus.NOT_FOUND, List.of("O recurso solicitado não foi encontrado"));
     }
 
     @ExceptionHandler(Exception.class)
