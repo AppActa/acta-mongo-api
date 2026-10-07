@@ -21,6 +21,7 @@ import java.util.UUID;
         name = "idx_resposta_formulario_empresa_ciclo_formulario_data",
         def = "{'id_empresa': 1, 'id_ciclo': 1, 'id_formulario': 1, 'respondido_em': -1}"
 )
+@CompoundIndex(name = "uk_resposta_formulario_empresa_ciclo_formulario_usuario", def = "{'id_empresa': 1, 'id_ciclo': 1, 'id_formulario': 1, 'id_usuario': 1}", unique = true)
 public class RespostaFormulario extends BaseDocument {
     @Field("id_empresa")
     private Long idEmpresa;

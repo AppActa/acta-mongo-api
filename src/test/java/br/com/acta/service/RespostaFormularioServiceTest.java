@@ -1,6 +1,7 @@
 package br.com.acta.service;
 
 import br.com.acta.common.config.security.UsuarioAutenticado;
+import br.com.acta.common.handler.exception.DuplicateFormResponseException;
 import br.com.acta.common.handler.exception.DocumentNotFoundException;
 import br.com.acta.common.handler.exception.ImmutableFieldException;
 import br.com.acta.common.handler.exception.InexistentFieldException;
@@ -8,6 +9,7 @@ import br.com.acta.common.validation.RespostaFormularioValidator;
 import br.com.acta.document.Formulario;
 import br.com.acta.document.RespostaFormulario;
 import br.com.acta.document.embedded.RespostaPergunta;
+import br.com.acta.document.enums.StatusFormulario;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioMapper;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioRequestDTO;
 import br.com.acta.dto.resposta_formulario.RespostaPerguntaMapper;
@@ -87,9 +89,10 @@ class RespostaFormularioServiceTest {
     void devePreencherContextoEValidarRespostasAoInserir() {
         UUID idFormulario = UUID.randomUUID();
         Formulario formulario = formulario(idFormulario);
-        RespostaFormularioRequestDTO dto = dto(7L);
+        RespostaFormularioRequestDTO dto = dto();
         when(authService.atual()).thenReturn(usuario);
         when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
+        when(repository.existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(10L, 25L, idFormulario, 7L)).thenReturn(false);
         when(mapper.toEntity(dto)).thenReturn(new RespostaFormulario());
         when(repository.save(any(RespostaFormulario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -106,14 +109,62 @@ class RespostaFormularioServiceTest {
     }
 
     @Test
-    void deveNegarRespostaEmNomeDeOutroUsuario() {
+    void deveRetornarConflitoQuandoUsuarioJaRespondeu() {
         UUID idFormulario = UUID.randomUUID();
         when(authService.atual()).thenReturn(usuario);
         when(formularioService.getEntity(idFormulario)).thenReturn(formulario(idFormulario));
+        when(repository.existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(10L, 25L, idFormulario, 7L)).thenReturn(true);
 
-        assertThrows(AccessDeniedException.class, () -> service.inserir(idFormulario, dto(99L)));
-        verify(validator, never()).validar(any(), any());
+        DuplicateFormResponseException erro = assertThrows(
+                DuplicateFormResponseException.class,
+                () -> service.inserir(idFormulario, dto()));
+
+        assertEquals("O usuário autenticado já respondeu a este formulário", erro.getMessage());
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void deveNegarUsuarioForaDaListaDeDestinatarios() {
+        UUID idFormulario = UUID.randomUUID();
+        Formulario formulario = formulario(idFormulario);
+        formulario.setIdsUsuariosDestinatarios(List.of(99L));
+        when(authService.atual()).thenReturn(usuario);
+        when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
+
+        assertThrows(AccessDeniedException.class, () -> service.inserir(idFormulario, dto()));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void deveRejeitarFormularioNaoPublicado() {
+        UUID idFormulario = UUID.randomUUID();
+        Formulario formulario = formulario(idFormulario);
+        formulario.setStatus(StatusFormulario.RASCUNHO);
+        when(authService.atual()).thenReturn(usuario);
+        when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
+
+        assertThrows(br.com.acta.common.handler.exception.InvalidRequestException.class,
+                () -> service.inserir(idFormulario, dto()));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void associaRespostaAoUsuarioAutenticado() {
+        UUID idFormulario = UUID.randomUUID();
+        Formulario formulario = formulario(idFormulario);
+        RespostaFormularioRequestDTO dto = dto();
+        when(authService.atual()).thenReturn(usuario);
+        when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
+        when(repository.existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(10L, 25L, idFormulario, 7L)).thenReturn(false);
+        when(mapper.toEntity(dto)).thenReturn(new RespostaFormulario());
+        when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.inserir(idFormulario, dto);
+
+        ArgumentCaptor<RespostaFormulario> captor = ArgumentCaptor.forClass(RespostaFormulario.class);
+        verify(repository).save(captor.capture());
+        assertEquals(7L, captor.getValue().getIdUsuario());
+        assertEquals(10L, captor.getValue().getIdEmpresa());
     }
 
     @Test
@@ -206,11 +257,12 @@ class RespostaFormularioServiceTest {
         formulario.setId(id);
         formulario.setIdEmpresa(10L);
         formulario.setIdCiclo(25L);
+        formulario.setStatus(StatusFormulario.ATIVO);
         return formulario;
     }
 
-    private RespostaFormularioRequestDTO dto(Long idUsuario) {
-        return new RespostaFormularioRequestDTO(idUsuario, List.of(
+    private RespostaFormularioRequestDTO dto() {
+        return new RespostaFormularioRequestDTO(List.of(
                 new RespostaPerguntaRequestDTO(UUID.randomUUID(), "Resposta")));
     }
 }

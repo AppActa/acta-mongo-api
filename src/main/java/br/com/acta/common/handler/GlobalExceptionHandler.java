@@ -51,6 +51,11 @@ public class GlobalExceptionHandler {
         return erro(HttpStatus.CONFLICT, List.of("Já existe um registro com os dados informados"));
     }
 
+    @ExceptionHandler(DuplicateFormResponseException.class)
+    public ResponseEntity<ErroResponse> handleDuplicateFormResponse(DuplicateFormResponseException dfre) {
+        return erro(HttpStatus.CONFLICT, List.of(dfre.getMessage()));
+    }
+
     @ExceptionHandler({ImmutableFieldException.class, InexistentFieldException.class})
     public ResponseEntity<ErroResponse> handleInvalidPatchField(RuntimeException re) {
         return erro(HttpStatus.BAD_REQUEST, List.of(re.getMessage()));
