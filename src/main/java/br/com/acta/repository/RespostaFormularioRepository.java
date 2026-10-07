@@ -11,4 +11,5 @@ public interface RespostaFormularioRepository extends BaseRepository<RespostaFor
     List<RespostaFormulario> findByIdEmpresaAndIdCicloAndIdFormularioOrderByRespondidoEmDesc(Long idEmpresa, Long idCiclo, UUID idFormulario);
 
     Optional<RespostaFormulario> findByIdAndIdEmpresa(UUID id, Long idEmpresa);
+    boolean existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(Long idEmpresa, Long idCiclo, UUID idFormulario, Long idUsuario);
 }

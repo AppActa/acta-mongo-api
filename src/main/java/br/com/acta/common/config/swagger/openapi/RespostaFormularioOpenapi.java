@@ -4,6 +4,7 @@ import br.com.acta.common.config.swagger.examples.SwaggerOpenapiDescriptions;
 import br.com.acta.common.config.swagger.annotation.ApiAuthenticationResponses;
 import br.com.acta.common.config.swagger.annotation.ApiBadRequestResponse;
 import br.com.acta.common.config.swagger.annotation.ApiResourceResponses;
+import br.com.acta.common.config.swagger.annotation.ApiConflictResponse;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioRequestDTO;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioResponseDTO;
@@ -35,9 +36,10 @@ public interface RespostaFormularioOpenapi {
     @ApiResourceResponses
     ResponseEntity<RespostaFormularioResponseDTO> buscarPorId(@Parameter(description = "ID da resposta de formulário") UUID idRespostaFormulario);
 
-    @Operation(summary = "Registra uma resposta de formulário")
+    @Operation(summary = "Registra uma resposta de formulário", description = "O usuário autenticado pode responder uma única vez. O formulário precisa estar publicado (ATIVO). Lista de destinatários ausente ou vazia permite resposta a todos os usuários da empresa; preenchida restringe aos usuários listados. O corpo contém somente as respostas às perguntas; o usuário responsável é obtido da autenticação.")
     @ApiResponse(responseCode = "201", description = "Resposta registrada", content = @Content(schema = @Schema(implementation = RespostaFormularioResponseDTO.class)))
     @ApiResourceResponses
+    @ApiConflictResponse
     @ApiUnsupportedMediaTypeResponse
     ResponseEntity<RespostaFormularioResponseDTO> inserir(@Parameter(description = "ID do formulário") UUID idFormulario, @RequestBody(description = "Dados da resposta do formulário", required = true) RespostaFormularioRequestDTO dto);
 
