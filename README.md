@@ -4,13 +4,13 @@ API REST do ACTA para apoiar o ciclo **PDCA** (*Plan, Do, Check, Act*): organiza
 
 ## 📌 Visão geral
 
-A API é a camada de persistência documental do ecossistema ACTA. Gerencia formulários, respostas de formulários, diagramas de Ishikawa, 5 Porquês, lições aprendidas e modelos de relatório em MongoDB.
+A API é a camada de persistência documental do ecossistema ACTA. Gerencia formulários, respostas de formulários, diagramas de Ishikawa, 5 Porquês e lições aprendidas em MongoDB. O repositório também contém modelos e contratos de relatório, ainda sem rotas HTTP.
 
 Clientes autenticam no Firebase e enviam o **Firebase ID Token** para consumir as rotas protegidas. A validação do usuário autenticado é delegada para a `acta-pg-api`, que concentra identidade, usuários, empresas e ciclos PDCA.
 
 ## 🧩 Padrão de projeto: Template Method
 
-A API utiliza uma base comum de operações CRUD na classe [`BaseService`](src/main/java/br/com/acta/service/base/BaseService.java). Ela define o fluxo compartilhado de busca, listagem, inserção, atualização parcial e exclusão dos documentos MongoDB, usando [`BaseRepository`](src/main/java/br/com/acta/repository/base/BaseRepository.java) e [`BaseMapper`](src/main/java/br/com/acta/dto/mapper/base/BaseMapper.java).
+A API utiliza uma base comum de operações CRUD na classe [`BaseService`](src/main/java/br/com/acta/service/base/BaseService.java). Ela implementa operações de busca, listagem, inserção e exclusão dos documentos MongoDB, usando [`BaseRepository`](src/main/java/br/com/acta/repository/base/BaseRepository.java) e [`BaseMapper`](src/main/java/br/com/acta/dto/mapper/base/BaseMapper.java). A atualização parcial é definida como contrato abstrato e implementada por cada serviço.
 
 O método abstrato protegido `getEntity` funciona como ponto de especialização desse fluxo. Serviços como [`FormularioService`](src/main/java/br/com/acta/service/FormularioService.java), [`IshikawaService`](src/main/java/br/com/acta/service/IshikawaService.java), [`CincoPorquesService`](src/main/java/br/com/acta/service/CincoPorquesService.java), [`RespostaFormularioService`](src/main/java/br/com/acta/service/RespostaFormularioService.java) e [`LicaoAprendidaService`](src/main/java/br/com/acta/service/LicaoAprendidaService.java) implementam essa etapa para localizar o documento correto, tratar ausência de registro e aplicar validações específicas.
 
@@ -18,7 +18,7 @@ Esse padrão foi adotado para **evitar duplicação de código, manter uniforme 
 
 ## 🧠 Padrão de projeto: Strategy
 
-A API também utiliza **Strategy** para validar respostas de formulários. A interface [`ValidacaoRespostaStrategy`](src/main/java/br/com/acta/common/validation/strategy/ValidacaoRespostaStrategy.java) define o contrato de validação, enquanto classes como `ValidacaoTextoStrategy`, `ValidacaoEmailStrategy`, `ValidacaoCpfStrategy`, `ValidacaoCheckboxStrategy`, `ValidacaoRadioStrategy`, `ValidacaoRangeStrategy` e demais estratégias implementam a regra específica de cada [`TipoResposta`](src/main/java/br/com/acta/document/enums/TipoResposta.java).
+A API também utiliza **Strategy** para validar e preparar respostas de formulários antes da persistência. A interface [`ValidacaoRespostaStrategy`](src/main/java/br/com/acta/common/validation/strategy/ValidacaoRespostaStrategy.java) define esse contrato, enquanto estratégias de texto, e-mail, CPF, seleção e demais formatos implementam as regras de cada [`TipoResposta`](src/main/java/br/com/acta/document/enums/TipoResposta.java). Para perguntas de CEP, a entrada é uma string de oito dígitos sem máscara e o endereço é preenchido pelo ViaCEP.
 
 O componente [`RespostaFormularioValidator`](src/main/java/br/com/acta/common/validation/RespostaFormularioValidator.java) recebe as estratégias pelo Spring, organiza um mapa por tipo de resposta e delega cada validação para a estratégia correspondente. Esse padrão foi adotado para **evitar condicionais extensas, isolar regras de validação por tipo de pergunta e facilitar a inclusão de novos formatos de resposta**.
 
@@ -29,20 +29,19 @@ O componente [`RespostaFormularioValidator`](src/main/java/br/com/acta/common/va
 - Diagramas de Ishikawa vinculados a ciclos.
 - Registros de 5 Porquês vinculados a Ishikawas.
 - Lições aprendidas por ciclo.
-- Modelos documentais para relatórios.
 - Health check da API e do banco em `GET /api/v1/health`.
 
 ## 🛠️ Tecnologias
 
-| Tecnologia | Versão |
+| Tecnologia | Uso |
 | --- | --- |
-| Java | 19 |
-| Spring Boot | 4.1.1 |
-| MongoDB | Driver via Spring Data MongoDB |
-| Spring Security | Starter do Spring Boot |
-| Springdoc OpenAPI | 3.0.0 |
-| MapStruct | 1.6.3 |
-| Docker | Dockerfile presente |
+| Java 19 | Linguagem e versão de compilação |
+| Spring Boot 4.1.1 | Aplicação REST e configuração |
+| MongoDB e Spring Data MongoDB | Persistência documental |
+| Spring Security | Autenticação e autorização |
+| Springdoc OpenAPI 3.0.0 | Documentação dos contratos HTTP |
+| MapStruct 1.6.3 | Mapeamento entre DTOs e documentos |
+| Docker | Build e execução em contêiner |
 
 Também utiliza Maven Wrapper, Lombok, Bean Validation, Caelum Stella e RestClient.
 
@@ -57,8 +56,8 @@ Defina as variáveis abaixo no ambiente ou em um `.env` local. Nunca versione se
 
 ```env
 PORT=8081
-MONGODB_URI=mongodb://localhost:27017/acta
-ACTA_PG_API_BASE_URL=https://acta-pg-api.onrender.com
+MONGODB_URI=mongodb://localhost:27017/acta_db
+ACTA_PG_API_BASE_URL=http://localhost:8080/api/v1/
 ACTA_PG_API_CONNECT_TIMEOUT=3s
 ACTA_PG_API_READ_TIMEOUT=5s
 ```
@@ -70,8 +69,13 @@ ACTA_PG_API_READ_TIMEOUT=5s
 | `ACTA_PG_API_BASE_URL` | URL base da API PostgreSQL usada para autenticação delegada e validações relacionais |
 | `ACTA_PG_API_CONNECT_TIMEOUT` | Timeout opcional de conexão com a API PostgreSQL |
 | `ACTA_PG_API_READ_TIMEOUT` | Timeout opcional de leitura da API PostgreSQL |
+| `ACTA_VIACEP_BASE_URL` | Integração usada por perguntas de CEP; padrão `https://viacep.com.br/ws/` |
+| `ACTA_VIACEP_CONNECT_TIMEOUT`, `ACTA_VIACEP_READ_TIMEOUT` | Timeouts opcionais do ViaCEP; padrões `3s` e `5s` |
+| `CORS_ALLOWED_ORIGINS` | Origens permitidas, separadas por vírgula; padrão `http://localhost:5173,http://localhost:3000` |
 
 O [`.env.example`](.env.example) é somente uma referência; Spring Boot não carrega `.env` automaticamente sem configuração externa.
+
+Para execução pelo Maven, exporte as variáveis no terminal. A URL da API PostgreSQL deve incluir o prefixo das rotas e a barra final, como `/api/v1/`. Os padrões estão em [`application.properties`](src/main/resources/application.properties); a consulta de perguntas de CEP exige acesso ao ViaCEP.
 
 ## 🚀 Execução local
 
@@ -94,7 +98,7 @@ docker build -t acta-mongo-api .
 docker run --rm -p 8081:8081 --env-file .env acta-mongo-api
 ```
 
-Ao executar em contêiner, também disponibilize a URL da `acta-pg-api` e a conexão MongoDB de forma segura; não copie credenciais para a imagem.
+Antes de executar em contêiner, crie o `.env` com as variáveis de configuração e use endereços do MongoDB e da `acta-pg-api` acessíveis a partir dele: `localhost` dentro do contêiner se refere ao próprio contêiner. O mapeamento `8081:8081` considera `PORT=8081`; ajuste-o caso configure outra porta.
 
 ## 📚 Documentação e autenticação
 
@@ -115,11 +119,11 @@ Todas as rotas abaixo exigem Firebase ID Token, exceto `GET /api/v1/health`.
 | --- | --- |
 | Formulários | `GET/POST /api/v1/ciclos/{idCiclo}/formularios`, `GET/PATCH/DELETE /api/v1/formularios/{idFormulario}` |
 | Respostas de formulário | `GET/POST /api/v1/formularios/{idFormulario}/respostas`, `GET/PATCH/DELETE /api/v1/respostas-formulario/{idRespostaFormulario}` |
-
-Cada usuário autenticado pode enviar uma única resposta por formulário. O formulário precisa estar publicado (`ATIVO`). Se `idsUsuariosDestinatarios` estiver preenchido, somente usuários listados podem responder; lista vazia ou ausente permite resposta a todos os usuários da empresa. O usuário responsável é sempre obtido da autenticação e o corpo contém somente as respostas às perguntas. Uma tentativa duplicada retorna HTTP 409.
 | Ishikawa | `GET/POST /api/v1/ciclos/{idCiclo}/ishikawas`, `GET/PATCH/DELETE /api/v1/ishikawas/{idIshikawa}` |
 | 5 Porquês | `GET/POST /api/v1/ishikawas/{idIshikawa}/cinco-porques`, `GET/PATCH/DELETE /api/v1/cinco-porques/{idCincoPorques}` |
 | Lições aprendidas | `GET/POST /api/v1/ciclos/{idCiclo}/licoes-aprendidas`, `GET/PATCH/DELETE /api/v1/licoes-aprendidas/{idLicaoAprendida}` |
+
+Cada usuário autenticado pode enviar uma única resposta por formulário. O formulário precisa estar publicado (`ATIVO`). Se `idsUsuariosDestinatarios` estiver preenchido, somente usuários listados podem responder; uma lista vazia permite resposta a todos os usuários da empresa. Na criação do formulário, essa lista é obrigatória. O usuário responsável é sempre obtido da autenticação e o corpo contém somente as respostas às perguntas. Uma tentativa duplicada retorna HTTP 409.
 
 O Swagger contém métodos, parâmetros, enumerações, esquemas e todas as rotas derivadas dos controllers.
 
@@ -137,9 +141,16 @@ curl -X POST http://localhost:8081/api/v1/ciclos/1/formularios \
     "titulo": "Verificação do plano de ação",
     "descricao": "Formulário para acompanhar execução do ciclo.",
     "tipo": "CHECKLIST",
-    "perguntas": [],
+    "perguntas": [
+      {
+        "titulo": "O plano foi executado?",
+        "tipo": "SIM_NAO",
+        "obrigatoria": true,
+        "opcoes": []
+      }
+    ],
     "idIshikawa": null,
-    "idsUsuariosDestinatarios": [1, 2]
+    "idsUsuariosDestinatarios": []
   }'
 ```
 
@@ -171,7 +182,9 @@ O formato confirmado é:
 | 400 | Requisição, parâmetros ou validação inválidos |
 | 401 / 403 | Token inválido/ausente ou acesso negado |
 | 404 / 405 | Recurso ou método inexistente |
-| 502 | Erro retornado pela integração com a API PostgreSQL |
+| 409 | Resposta duplicada ou conflito de dados |
+| 415 | Tipo de conteúdo não suportado |
+| 502 | Falha na integração com a API PostgreSQL ou o ViaCEP |
 | 500 / 503 | Erro interno ou health check/autenticação delegada indisponível |
 
 ## 🏗️ Arquitetura
@@ -181,7 +194,7 @@ O formato confirmado é:
 - `repository/`: acesso MongoDB.
 - `document/`: documentos, embeddeds e enums.
 - `dto/` e `dto/mapper/`: contratos e mapeamento MapStruct.
-- `common/`: segurança, validação, Strategy de respostas, patch, client PostgreSQL e erros.
+- `common/`: segurança, validação, Strategy de respostas, patch, clients de integração e erros.
 
 A API é stateless. `common/config/security/SecurityConfig.java` registra `ActaPgApiAuthFilter`, enquanto `PgApiClient` consulta a `acta-pg-api` para validar o token recebido e obter o usuário autenticado. `AuthService` e `@PreAuthorize` nos serviços aplicam a exigência de autenticação nas operações protegidas. `RespostaFormularioValidator` aplica Strategy para selecionar a validação correta conforme o tipo de resposta.
 

@@ -52,4 +52,13 @@ public class RespostaFormularioValidator {
                     throw new InvalidRequestException("A pergunta obrigatória '" + pergunta.getTitulo() + "' não foi respondida");
                 });
     }
+
+    public List<RespostaPerguntaRequestDTO> preparar(Formulario formulario, List<RespostaPerguntaRequestDTO> respostas) {
+        Map<UUID, Pergunta> perguntasId = new HashMap<>();
+        formulario.getPerguntas().forEach(pergunta -> perguntasId.put(pergunta.getId(), pergunta));
+        return respostas.stream().map(resposta -> new RespostaPerguntaRequestDTO(
+                resposta.idPergunta(),
+                strategies.get(perguntasId.get(resposta.idPergunta()).getTipo()).preparar(resposta.resposta())
+        )).toList();
+    }
 }

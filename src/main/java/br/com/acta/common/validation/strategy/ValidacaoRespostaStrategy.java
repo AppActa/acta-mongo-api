@@ -11,6 +11,10 @@ public interface ValidacaoRespostaStrategy {
 
     void validar(Pergunta pergunta, Object resposta);
 
+    default Object preparar(Object resposta) {
+        return resposta;
+    }
+
     default String texto(Object resposta, Pergunta pergunta, String formatoEsperado) {
         try {
             return (String) resposta;
