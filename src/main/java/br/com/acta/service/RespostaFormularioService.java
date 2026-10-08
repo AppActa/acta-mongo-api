@@ -74,6 +74,7 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
         validator.validar(formulario, dto.respostas());
 
         RespostaFormulario resposta = mapper.toEntity(dto);
+        resposta.setRespostas(respostaPerguntaMapper.toEntityList(validator.preparar(formulario, dto.respostas())));
         resposta.setIdEmpresa(formulario.getIdEmpresa());
         resposta.setIdCiclo(formulario.getIdCiclo());
         resposta.setIdFormulario(idFormulario);
@@ -106,7 +107,7 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
             Formulario formulario = formularioService.getEntity(resposta.getIdFormulario());
             List<RespostaPerguntaRequestDTO> respostas = ConversorObject.toRespostasPergunta(campos.get("respostas"));
             validator.validar(formulario, respostas);
-            resposta.setRespostas(respostaPerguntaMapper.toEntityList(respostas));
+            resposta.setRespostas(respostaPerguntaMapper.toEntityList(validator.preparar(formulario, respostas)));
         }
 
         RespostaFormulario salva;

@@ -90,6 +90,14 @@ class RespostaFormularioServiceTest {
         UUID idFormulario = UUID.randomUUID();
         Formulario formulario = formulario(idFormulario);
         RespostaFormularioRequestDTO dto = dto();
+        Map<String, String> endereco = Map.of("cep", "01001000", "uf", "SP", "cidade", "São Paulo",
+                "bairro", "Sé", "logradouro", "Praça da Sé");
+        List<RespostaPerguntaRequestDTO> preparadas = List.of(
+                new RespostaPerguntaRequestDTO(dto.respostas().get(0).idPergunta(), endereco));
+        RespostaPergunta entidade = new RespostaPergunta();
+        entidade.setResposta(endereco);
+        when(validator.preparar(formulario, dto.respostas())).thenReturn(preparadas);
+        when(respostaPerguntaMapper.toEntityList(preparadas)).thenReturn(List.of(entidade));
         when(authService.atual()).thenReturn(usuario);
         when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
         when(repository.existsByIdEmpresaAndIdCicloAndIdFormularioAndIdUsuario(10L, 25L, idFormulario, 7L)).thenReturn(false);
@@ -106,6 +114,7 @@ class RespostaFormularioServiceTest {
         assertEquals(idFormulario, captor.getValue().getIdFormulario());
         assertEquals(7L, captor.getValue().getIdUsuario());
         assertNotNull(captor.getValue().getRespondidoEm());
+        assertEquals(endereco, captor.getValue().getRespostas().get(0).getResposta());
     }
 
     @Test
@@ -235,7 +244,10 @@ class RespostaFormularioServiceTest {
         when(authService.atual()).thenReturn(usuario);
         when(repository.findByIdAndIdEmpresa(id, 10L)).thenReturn(Optional.of(resposta));
         when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
-        when(respostaPerguntaMapper.toEntityList(any())).thenReturn(List.of(entidade));
+        List<RespostaPerguntaRequestDTO> preparadas = List.of(
+                new RespostaPerguntaRequestDTO(idPergunta, "Resposta atualizada"));
+        when(validator.preparar(any(Formulario.class), any())).thenReturn(preparadas);
+        when(respostaPerguntaMapper.toEntityList(preparadas)).thenReturn(List.of(entidade));
         when(repository.save(resposta)).thenReturn(resposta);
 
         service.patch(id, Map.of("respostas", valor));
