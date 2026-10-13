@@ -8,6 +8,7 @@ import br.com.acta.common.config.swagger.annotation.ApiConflictResponse;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioRequestDTO;
 import br.com.acta.dto.resposta_formulario.RespostaFormularioResponseDTO;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -41,7 +42,7 @@ public interface RespostaFormularioOpenapi {
     @ApiResourceResponses
     @ApiConflictResponse
     @ApiUnsupportedMediaTypeResponse
-    ResponseEntity<RespostaFormularioResponseDTO> inserir(@Parameter(description = "ID do formulário") UUID idFormulario, @RequestBody(description = "Dados da resposta do formulário", required = true) RespostaFormularioRequestDTO dto);
+    ResponseEntity<RespostaFormularioResponseDTO> inserir(@Parameter(description = "ID do formulário") UUID idFormulario, @RequestBody(description = "Dados da resposta do formulário", required = true) @Valid RespostaFormularioRequestDTO dto);
 
     @Operation(summary = "Atualiza parcialmente uma resposta de formulário")
     @ApiResponse(responseCode = "200", description = "Resposta atualizada", content = @Content(schema = @Schema(implementation = RespostaFormularioResponseDTO.class)))

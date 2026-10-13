@@ -7,6 +7,8 @@ import br.com.acta.common.config.swagger.annotation.ApiResourceResponses;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.formulario.FormularioRequestDTO;
 import br.com.acta.dto.formulario.FormularioResponseDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,7 +30,7 @@ public interface FormularioOpenapi {
     @ApiResponse(responseCode = "200", description = "Formulários encontrados", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FormularioResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<FormularioResponseDTO>> buscar(@Parameter(description = "ID do ciclo") Long idCiclo);
+    ResponseEntity<List<FormularioResponseDTO>> buscar(@Parameter(description = "ID do ciclo") @Positive Long idCiclo);
 
     @Operation(summary = "Busca um formulário")
     @ApiResponse(responseCode = "200", description = "Formulário encontrado", content = @Content(schema = @Schema(implementation = FormularioResponseDTO.class)))
@@ -39,7 +41,7 @@ public interface FormularioOpenapi {
     @ApiResponse(responseCode = "201", description = "Formulário criado", content = @Content(schema = @Schema(implementation = FormularioResponseDTO.class)))
     @ApiResourceResponses
     @ApiUnsupportedMediaTypeResponse
-    ResponseEntity<FormularioResponseDTO> inserir(@Parameter(description = "ID do ciclo") Long idCiclo, @RequestBody(description = "Dados do formulário", required = true) FormularioRequestDTO dto);
+    ResponseEntity<FormularioResponseDTO> inserir(@Parameter(description = "ID do ciclo") @Positive Long idCiclo, @RequestBody(description = "Dados do formulário", required = true) @Valid FormularioRequestDTO dto);
 
     @Operation(summary = "Atualiza parcialmente um formulário")
     @ApiResponse(responseCode = "200", description = "Formulário atualizado", content = @Content(schema = @Schema(implementation = FormularioResponseDTO.class)))

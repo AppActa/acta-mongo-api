@@ -31,7 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -97,7 +98,7 @@ class LicaoAprendidaServiceTest {
     @Test
     void deveListarSomenteLicoesDoCicloEDaEmpresaAutenticada() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenReturn(ciclo(10L));
         when(repository.findByIdEmpresaAndIdCicloOrderByCriadoEmDesc(10L, 25L)).thenReturn(List.of());
         when(mapper.toResponseList(List.of())).thenReturn(List.of());
 
@@ -110,7 +111,7 @@ class LicaoAprendidaServiceTest {
     @Test
     void deveNegarCicloDeOutraEmpresa() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(99L));
+        when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenReturn(ciclo(99L));
 
         assertThrows(AccessDeniedException.class, () -> service.buscarPorCiclo(25L));
         verify(repository, never()).findByIdEmpresaAndIdCicloOrderByCriadoEmDesc(10L, 25L);
@@ -121,7 +122,7 @@ class LicaoAprendidaServiceTest {
         LicaoAprendidaRequestDTO dto = new LicaoAprendidaRequestDTO(
                 "Título", "Lição", List.of("tag"), "CHECK", "Resultado", "ALTA", "Produção");
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenReturn(ciclo(10L));
         when(mapper.toEntity(dto)).thenReturn(new LicaoAprendida());
         when(repository.save(any(LicaoAprendida.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -195,7 +196,7 @@ class LicaoAprendidaServiceTest {
     @Test
     void devePropagarFalhaDaPgApiSemConsultarRepositorio() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L, anyString())).thenThrow(new PgApiException("API indisponível"));
+        when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenThrow(new PgApiException("API indisponível"));
 
         assertThrows(PgApiException.class, () -> service.buscarPorCiclo(25L));
         verify(repository, never()).findByIdEmpresaAndIdCicloOrderByCriadoEmDesc(any(), any());

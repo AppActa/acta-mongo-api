@@ -7,6 +7,8 @@ import br.com.acta.common.config.swagger.annotation.ApiResourceResponses;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.ishikawa.IshikawaRequestDTO;
 import br.com.acta.dto.ishikawa.IshikawaResponseDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,7 +30,7 @@ public interface IshikawaOpenapi {
     @ApiResponse(responseCode = "200", description = "Ishikawas encontrados", content = @Content(array = @ArraySchema(schema = @Schema(implementation = IshikawaResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<IshikawaResponseDTO>> buscar(@Parameter(description = "ID do ciclo") Long idCiclo);
+    ResponseEntity<List<IshikawaResponseDTO>> buscar(@Parameter(description = "ID do ciclo") @Positive Long idCiclo);
 
     @Operation(summary = "Busca um Ishikawa")
     @ApiResponse(responseCode = "200", description = "Ishikawa encontrado", content = @Content(schema = @Schema(implementation = IshikawaResponseDTO.class)))
@@ -39,7 +41,7 @@ public interface IshikawaOpenapi {
     @ApiResponse(responseCode = "201", description = "Ishikawa criado", content = @Content(schema = @Schema(implementation = IshikawaResponseDTO.class)))
     @ApiResourceResponses
     @ApiUnsupportedMediaTypeResponse
-    ResponseEntity<IshikawaResponseDTO> inserir(@Parameter(description = "ID do ciclo") Long idCiclo, @RequestBody(description = "Dados do Ishikawa", required = true) IshikawaRequestDTO dto);
+    ResponseEntity<IshikawaResponseDTO> inserir(@Parameter(description = "ID do ciclo") @Positive Long idCiclo, @RequestBody(description = "Dados do Ishikawa", required = true) @Valid IshikawaRequestDTO dto);
 
     @Operation(summary = "Atualiza parcialmente um Ishikawa")
     @ApiResponse(responseCode = "200", description = "Ishikawa atualizado", content = @Content(schema = @Schema(implementation = IshikawaResponseDTO.class)))
