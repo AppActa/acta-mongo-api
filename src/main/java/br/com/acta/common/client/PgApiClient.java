@@ -55,12 +55,13 @@ public class PgApiClient {
         }
     }
 
-    public CicloPgResponse buscarCiclo(Long idCiclo) {
+    public CicloPgResponse buscarCiclo(Long idCiclo, String authorization) {
         validarIdentificador(idCiclo);
 
         try {
             CicloPgResponse ciclo = restClient.get()
                     .uri("ciclo/{id}", idCiclo)
+                    .header(HttpHeaders.AUTHORIZATION, authorization)
                     .retrieve()
                     .body(CicloPgResponse.class);
 
