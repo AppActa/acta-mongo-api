@@ -37,26 +37,8 @@ public class PgApiClient {
         this.objectMapper = objectMapper;
     }
 
-    public EmpresaPgResponse buscarEmpresa(Long idEmpresa) {
-        validarIdentificador(idEmpresa);
-
-        try {
-            EmpresaPgResponse empresa = restClient.get()
-                    .uri("empresa/{id}", idEmpresa)
-                    .retrieve()
-                    .body(EmpresaPgResponse.class);
-
-            if (empresa == null) throw new PgApiException();
-            return empresa;
-        } catch (RestClientResponseException rcre) {
-            throw traduzirErro(rcre);
-        } catch (ResourceAccessException rae) {
-            throw new PgApiException("Não foi possível acessar a API PostgreSQL");
-        }
-    }
-
     public CicloPgResponse buscarCiclo(Long idCiclo, String authorization) {
-        validarIdentificador(idCiclo);
+        validarId(idCiclo);
 
         try {
             CicloPgResponse ciclo = restClient.get()
@@ -67,24 +49,6 @@ public class PgApiClient {
 
             if (ciclo == null) throw new PgApiException();
             return ciclo;
-        } catch (RestClientResponseException rcre) {
-            throw traduzirErro(rcre);
-        } catch (ResourceAccessException rae) {
-            throw new PgApiException("Não foi possível acessar a API PostgreSQL");
-        }
-    }
-
-    public UsuarioPgResponse buscarUsuario(Long idUsuario) {
-        validarIdentificador(idUsuario);
-
-        try {
-            UsuarioPgResponse usuario = restClient.get()
-                    .uri("usuario/{id}", idUsuario)
-                    .retrieve()
-                    .body(UsuarioPgResponse.class);
-
-            if (usuario == null) throw new PgApiException();
-            return usuario;
         } catch (RestClientResponseException rcre) {
             throw traduzirErro(rcre);
         } catch (ResourceAccessException rae) {
@@ -113,7 +77,7 @@ public class PgApiClient {
         }
     }
 
-    private void validarIdentificador(Long id) {
+    private void validarId(Long id) {
         if (id == null || id <= 0)
             throw new IllegalArgumentException("O identificador deve ser maior que zero");
     }
@@ -131,29 +95,12 @@ public class PgApiClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record EmpresaPgResponse(
-            Long id,
-            String nome,
-            String status
-    ){}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public record CicloPgResponse(
             Long id,
             String titulo,
             String status,
             Long idEmpresa,
             Long idGestor
-    ){}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record UsuarioPgResponse(
-            Long id,
-            String nome,
-            String email,
-            String tipo,
-            Long idEmpresa,
-            String status
     ){}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
