@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -91,7 +92,7 @@ class IshikawaServiceTest {
     @Test
     void deveListarSomenteIshikawasDoCicloEDaEmpresaAutenticada() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
         when(repository.findByIdEmpresaAndIdCiclo(10L, 25L)).thenReturn(List.of());
         when(mapper.toResponseList(List.of())).thenReturn(List.of());
 
@@ -104,7 +105,7 @@ class IshikawaServiceTest {
     @Test
     void deveNegarCicloDeOutraEmpresa() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(99L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(99L));
 
         assertThrows(AccessDeniedException.class, () -> service.buscarPorCiclo(25L));
         verify(repository, never()).findByIdEmpresaAndIdCiclo(10L, 25L);
@@ -115,7 +116,7 @@ class IshikawaServiceTest {
         IshikawaRequestDTO dto = new IshikawaRequestDTO("Problema", List.of(
                 new CausaIshikawaRequestDTO(CategoriaIshikawa.MAQUINA, "Sensor instável")));
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
         when(mapper.toEntity(dto)).thenReturn(new Ishikawa());
         when(repository.save(any(Ishikawa.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -182,7 +183,7 @@ class IshikawaServiceTest {
     @Test
     void devePropagarFalhaDaPgApiSemConsultarRepositorio() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenThrow(new PgApiException("API indisponível"));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenThrow(new PgApiException("API indisponível"));
 
         assertThrows(PgApiException.class, () -> service.buscarPorCiclo(25L));
         verify(repository, never()).findByIdEmpresaAndIdCiclo(any(), any());

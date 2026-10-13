@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -71,7 +72,7 @@ class FormularioServiceTest {
     @Test
     void deveListarSomenteFormulariosDoCicloEDaEmpresaAutenticada() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
         when(repository.findByIdEmpresaAndIdCiclo(10L, 25L)).thenReturn(List.of());
         when(mapper.toResponseList(List.of())).thenReturn(List.of());
 
@@ -83,7 +84,7 @@ class FormularioServiceTest {
     @Test
     void deveNegarCicloDeOutraEmpresa() {
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(99L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(99L));
 
         assertThrows(AccessDeniedException.class, () -> service.buscarPorCiclo(25L));
         verify(repository, never()).findByIdEmpresaAndIdCiclo(any(), any());
@@ -93,7 +94,7 @@ class FormularioServiceTest {
     void deveIdentificarEmpresaECicloAoInserir() {
         FormularioRequestDTO dto = dto(TipoFormulario.CHECKLIST, null);
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
         when(mapper.toEntity(dto)).thenReturn(new Formulario());
         when(repository.save(any(Formulario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -110,7 +111,7 @@ class FormularioServiceTest {
     void deveExigirIshikawaParaFormularioDesseTipo() {
         FormularioRequestDTO dto = dto(TipoFormulario.ISHIKAWA, null);
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
 
         assertThrows(InvalidRequestException.class, () -> service.inserir(25L, dto));
         verify(repository, never()).save(any());
@@ -122,7 +123,7 @@ class FormularioServiceTest {
         Ishikawa ishikawa = new Ishikawa();
         ishikawa.setIdCiclo(99L);
         when(authService.atual()).thenReturn(usuario);
-        when(pgApiClient.buscarCiclo(25L)).thenReturn(ciclo(10L));
+        when(pgApiClient.buscarCiclo(25L, anyString())).thenReturn(ciclo(10L));
         when(ishikawaService.getEntity(idIshikawa)).thenReturn(ishikawa);
 
         assertThrows(InvalidRequestException.class,

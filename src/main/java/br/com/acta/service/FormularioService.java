@@ -91,7 +91,7 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
     }
 
     private void validarCicloDaEmpresa(Long idCiclo, Long idEmpresa) {
-        PgApiClient.CicloPgResponse ciclo = pgApiClient.buscarCiclo(idCiclo);
+        PgApiClient.CicloPgResponse ciclo = pgApiClient.buscarCiclo(idCiclo, authService.autorizacaoAtual());
         if (!idEmpresa.equals(ciclo.idEmpresa()))
             throw new AccessDeniedException("O ciclo informado não pertence à empresa do usuário autenticado");
     }
