@@ -5,6 +5,9 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 public class AuthService {
@@ -15,5 +18,16 @@ public class AuthService {
             throw new AuthenticationCredentialsNotFoundException("Usuário não autenticado");
 
         return usuario;
+    }
+
+    public String autorizacaoAtual() {
+        if (!(RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes))
+            throw new AuthenticationCredentialsNotFoundException("Requisição não disponível");
+
+        String authorization = attributes.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorization == null || authorization.isBlank())
+            throw new AuthenticationCredentialsNotFoundException("Usuário não autenticado");
+
+        return authorization;
     }
 }

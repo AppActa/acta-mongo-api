@@ -25,7 +25,7 @@ public class LicaoAprendidaController implements LicaoAprendidaOpenapi {
 
     @GetMapping("/ciclos/{idCiclo}/licoes-aprendidas")
     @Override
-    public ResponseEntity<List<LicaoAprendidaResponseDTO>> buscar(@PathVariable @Positive Long idCiclo) {
+    public ResponseEntity<List<LicaoAprendidaResponseDTO>> buscar(@PathVariable Long idCiclo) {
         List<LicaoAprendidaResponseDTO> dtos = service.buscarPorCiclo(idCiclo);
         return ResponseEntity.ok(dtos);
     }

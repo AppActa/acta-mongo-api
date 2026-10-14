@@ -25,7 +25,7 @@ public class IshikawaController implements IshikawaOpenapi {
 
     @GetMapping("/ciclos/{idCiclo}/ishikawas")
     @Override
-    public ResponseEntity<List<IshikawaResponseDTO>> buscar(@PathVariable @Positive Long idCiclo) {
+    public ResponseEntity<List<IshikawaResponseDTO>> buscar(@PathVariable Long idCiclo) {
         List<IshikawaResponseDTO> dtos = service.buscarPorCiclo(idCiclo);
         return ResponseEntity.ok(dtos);
     }

@@ -7,6 +7,8 @@ import br.com.acta.common.config.swagger.annotation.ApiResourceResponses;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.licao_aprendida.LicaoAprendidaRequestDTO;
 import br.com.acta.dto.licao_aprendida.LicaoAprendidaResponseDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,7 +30,7 @@ public interface LicaoAprendidaOpenapi {
     @ApiResponse(responseCode = "200", description = "Lições aprendidas encontradas", content = @Content(array = @ArraySchema(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<LicaoAprendidaResponseDTO>> buscar(@Parameter(description = "ID do ciclo") Long idCiclo);
+    ResponseEntity<List<LicaoAprendidaResponseDTO>> buscar(@Parameter(description = "ID do ciclo") @Positive Long idCiclo);
 
     @Operation(summary = "Busca uma lição aprendida")
     @ApiResponse(responseCode = "200", description = "Lição aprendida encontrada", content = @Content(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class)))
@@ -39,7 +41,7 @@ public interface LicaoAprendidaOpenapi {
     @ApiResponse(responseCode = "201", description = "Lição aprendida criada", content = @Content(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class)))
     @ApiResourceResponses
     @ApiUnsupportedMediaTypeResponse
-    ResponseEntity<LicaoAprendidaResponseDTO> inserir(@Parameter(description = "ID do ciclo") Long idCiclo, @RequestBody(description = "Dados da lição aprendida", required = true) LicaoAprendidaRequestDTO dto);
+    ResponseEntity<LicaoAprendidaResponseDTO> inserir(@Parameter(description = "ID do ciclo") @Positive Long idCiclo, @RequestBody(description = "Dados da lição aprendida", required = true) @Valid LicaoAprendidaRequestDTO dto);
 
     @Operation(summary = "Atualiza parcialmente uma lição aprendida")
     @ApiResponse(responseCode = "200", description = "Lição aprendida atualizada", content = @Content(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class)))

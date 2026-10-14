@@ -9,6 +9,7 @@ import br.com.acta.common.config.swagger.annotation.ApiResourceResponses;
 import br.com.acta.common.config.swagger.annotation.ApiUnsupportedMediaTypeResponse;
 import br.com.acta.dto.cinco_porques.CincoPorquesRequestDTO;
 import br.com.acta.dto.cinco_porques.CincoPorquesResponseDTO;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -42,7 +43,7 @@ public interface CincoPorquesOpenapi {
     @ApiResourceResponses
     @ApiConflictResponse
     @ApiUnsupportedMediaTypeResponse
-    ResponseEntity<CincoPorquesResponseDTO> inserir(@Parameter(description = "ID do Ishikawa") UUID idIshikawa, @RequestBody(description = "Dados da análise dos Cinco Porquês", required = true) CincoPorquesRequestDTO dto);
+    ResponseEntity<CincoPorquesResponseDTO> inserir(@Parameter(description = "ID do Ishikawa") UUID idIshikawa, @RequestBody(description = "Dados da análise dos Cinco Porquês", required = true) @Valid CincoPorquesRequestDTO dto);
 
     @Operation(summary = "Atualiza parcialmente uma análise dos Cinco Porquês")
     @ApiResponse(responseCode = "200", description = "Análise atualizada", content = @Content(schema = @Schema(implementation = CincoPorquesResponseDTO.class)))
