@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -12,6 +15,7 @@ import java.util.UUID;
 
 @Component
 public class FcmApiClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FcmApiClient.class);
     private final RestClient.Builder restClientBuilder;
     private final String internalToken;
 
@@ -33,10 +37,10 @@ public class FcmApiClient {
     public void publicarFormularioPublicado(UUID idFormulario, Long idEmpresa, List<Long> destinatarios, Instant instante) {
         if (destinatarios == null || destinatarios.isEmpty()) return;
 
+        String chaveDeduplicacao = "FORMULARIO_PUBLICADO:" + idFormulario + ":" + instante;
         EventoInterno evento = new EventoInterno(
-                "FORMULARIO_PUBLICADO", instante.toString(), idEmpresa, destinatarios,
-                "FORMULARIO", idFormulario.toString(), "acta://formularios/" + idFormulario,
-                "FORMULARIO_PUBLICADO:" + idFormulario + ":" + instante
+                chaveDeduplicacao, "FORMULARIO_PUBLICADO", instante.toString(), idEmpresa, destinatarios,
+                "FORMULARIO", idFormulario.toString(), "acta://formularios/" + idFormulario, chaveDeduplicacao
         );
 
         try {
@@ -44,16 +48,17 @@ public class FcmApiClient {
                     .header("X-Internal-Token", internalToken)
                     .body(evento)
                     .retrieve().toBodilessEntity();
-        } catch (Exception e) {
-            throw new IllegalStateException("Não foi possível publicar evento de formulário " + idFormulario + " no acta-fcm-api", e);
+        } catch (RestClientException e) {
+            LOGGER.warn("Falha ao publicar FORMULARIO_PUBLICADO no acta-fcm-api ({})", e.getClass().getSimpleName());
         }
     }
 
     public record EventoInterno(
-            String tipo,
-            String instante,
-            Long empresa,
-            List<Long> destinatarios,
+            String idEvento,
+            String tipoEvento,
+            String ocorridoEm,
+            Long idEmpresa,
+            List<Long> idsDestinatarios,
             String tipoEntidade,
             String idEntidade,
             String deepLink,

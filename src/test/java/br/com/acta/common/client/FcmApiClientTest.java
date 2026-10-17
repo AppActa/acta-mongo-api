@@ -16,7 +16,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class FcmApiClientTest {
     @Test
@@ -31,21 +31,21 @@ class FcmApiClientTest {
                 .andExpect(header("X-Internal-Token", "test-token"))
                 .andExpect(content().json("""
                         {
-                          "tipo":"FORMULARIO_PUBLICADO",
-                          "instante":"2026-10-17T12:30:45Z",
-                          "empresa":10,
-                          "destinatarios":[101,102],
+                          "idEvento":"FORMULARIO_PUBLICADO:%s:2026-10-17T12:30:45Z",
+                          "tipoEvento":"FORMULARIO_PUBLICADO",
+                          "ocorridoEm":"2026-10-17T12:30:45Z",
+                          "idEmpresa":10,
+                          "idsDestinatarios":[101,102],
                           "tipoEntidade":"FORMULARIO",
                           "idEntidade":"%s",
                           "deepLink":"acta://formularios/%s",
                           "chaveDeduplicacao":"FORMULARIO_PUBLICADO:%s:2026-10-17T12:30:45Z"
                         }
-                        """.formatted(id, id, id)))
+                        """.formatted(id, id, id, id)))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE)
                         .body("offline").contentType(org.springframework.http.MediaType.TEXT_PLAIN));
 
-        assertThrows(IllegalStateException.class,
-                () -> client.publicarFormularioPublicado(id, 10L, List.of(101L, 102L), instante));
+        assertDoesNotThrow(() -> client.publicarFormularioPublicado(id, 10L, List.of(101L, 102L), instante));
         server.verify();
     }
 }
