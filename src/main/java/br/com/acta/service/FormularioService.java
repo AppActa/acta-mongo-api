@@ -1,6 +1,7 @@
 package br.com.acta.service;
 
 import br.com.acta.common.client.PgApiClient;
+import br.com.acta.common.client.FcmApiClient;
 import br.com.acta.common.config.security.UsuarioAutenticado;
 import br.com.acta.common.handler.exception.DocumentNotFoundException;
 import br.com.acta.common.handler.exception.InvalidRequestException;
@@ -10,6 +11,7 @@ import br.com.acta.common.utils.Validador;
 import br.com.acta.document.Formulario;
 import br.com.acta.document.Ishikawa;
 import br.com.acta.document.enums.TipoFormulario;
+import br.com.acta.document.enums.StatusFormulario;
 import br.com.acta.dto.formulario.FormularioMapper;
 import br.com.acta.dto.formulario.FormularioRequestDTO;
 import br.com.acta.dto.formulario.FormularioResponseDTO;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 
 @Service
 @PreAuthorize("isAuthenticated()")
@@ -30,16 +33,18 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
     private final FormularioRepository repo;
     private final PgApiClient pgApiClient;
     private final IshikawaService ishikawaService;
+    private final FcmApiClient fcmApiClient;
     private final PatchConfig patchConfig = new PatchConfig(
             Set.of("idEmpresa", "idCiclo", "titulo", "descricao", "tipo", "status", "perguntas", "idIshikawa", "idsUsuariosDestinatarios", "publicadoEm"),
             Set.of("titulo", "descricao", "tipo", "status", "perguntas", "idIshikawa", "idsUsuariosDestinatarios")
     );
 
-    public FormularioService(FormularioRepository repo, FormularioMapper mapper, AuthService authService, PgApiClient pgApiClient, IshikawaService ishikawaService) {
+    public FormularioService(FormularioRepository repo, FormularioMapper mapper, AuthService authService, PgApiClient pgApiClient, IshikawaService ishikawaService, FcmApiClient fcmApiClient) {
         super(repo, mapper, authService);
         this.repo = repo;
         this.pgApiClient = pgApiClient;
         this.ishikawaService = ishikawaService;
+        this.fcmApiClient = fcmApiClient;
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +80,9 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
     public FormularioResponseDTO patch(UUID id, Map<String, Object> campos) {
         Validador.validarCampos(campos, patchConfig);
         Formulario formulario = getEntity(id);
+        boolean transicaoPublicacao = formulario.getStatus() != StatusFormulario.ATIVO
+                && campos.containsKey("status")
+                && ConversorObject.toStatusFormulario(campos.get("status")) == StatusFormulario.ATIVO;
 
         if (campos.containsKey("titulo")) formulario.setTitulo((String) campos.get("titulo"));
         if (campos.containsKey("descricao")) formulario.setDescricao((String) campos.get("descricao"));
@@ -84,9 +92,13 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
         if (campos.containsKey("idIshikawa")) formulario.setIdIshikawa(ConversorObject.toUUID(campos.get("idIshikawa"), "idIshikawa"));
         if (campos.containsKey("idsUsuariosDestinatarios")) formulario.setIdsUsuariosDestinatarios(ConversorObject.toLongList(campos.get("idsUsuariosDestinatarios"), "idsUsuariosDestinatarios"));
 
+        if (transicaoPublicacao) formulario.setPublicadoEm(Instant.now());
         validarVinculoIshikawa(formulario.getTipo(), formulario.getIdIshikawa(), formulario.getIdCiclo());
 
         Formulario salvo = repo.save(formulario);
+        if (transicaoPublicacao && salvo.getIdsUsuariosDestinatarios() != null && !salvo.getIdsUsuariosDestinatarios().isEmpty())
+            fcmApiClient.publicarFormularioPublicado(id, salvo.getIdEmpresa(), salvo.getIdsUsuariosDestinatarios(), salvo.getPublicadoEm());
+
         return mapper.toResponse(salvo);
     }
 

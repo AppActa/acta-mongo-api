@@ -1,6 +1,7 @@
 package br.com.acta.service;
 
 import br.com.acta.common.client.PgApiClient;
+import br.com.acta.common.client.FcmApiClient;
 import br.com.acta.common.config.security.UsuarioAutenticado;
 import br.com.acta.common.handler.exception.DocumentNotFoundException;
 import br.com.acta.common.handler.exception.ImmutableFieldException;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
 class FormularioServiceTest {
@@ -51,13 +53,15 @@ class FormularioServiceTest {
     private PgApiClient pgApiClient;
     @Mock
     private IshikawaService ishikawaService;
+    @Mock
+    private FcmApiClient fcmApiClient;
 
     private FormularioService service;
     private UsuarioAutenticado usuario;
 
     @BeforeEach
     void setUp() {
-        service = new FormularioService(repository, mapper, authService, pgApiClient, ishikawaService);
+        service = new FormularioService(repository, mapper, authService, pgApiClient, ishikawaService, fcmApiClient);
         usuario = new UsuarioAutenticado("uid", 7L, 10L, 20L, "Usuário", "u@acta.com",
                 "Empresa", "COLABORADOR", false, "ATIVO");
     }
@@ -188,6 +192,7 @@ class FormularioServiceTest {
         UUID idIshikawa = UUID.randomUUID();
         Formulario formulario = new Formulario();
         formulario.setIdCiclo(25L);
+        formulario.setIdEmpresa(10L);
         formulario.setTipo(TipoFormulario.CHECKLIST);
         FormularioResponseDTO esperado = mock(FormularioResponseDTO.class);
         List<Map<String, Object>> perguntasJson = List.of(Map.of(
@@ -221,6 +226,44 @@ class FormularioServiceTest {
         assertEquals(idIshikawa, formulario.getIdIshikawa());
         assertEquals(List.of(101L, 102L), formulario.getIdsUsuariosDestinatarios());
         verify(repository).save(formulario);
+        verify(fcmApiClient).publicarFormularioPublicado(eq(id), eq(10L), eq(List.of(101L, 102L)), any());
+        var ordem = inOrder(repository, fcmApiClient);
+        ordem.verify(repository).save(formulario);
+        ordem.verify(fcmApiClient).publicarFormularioPublicado(eq(id), eq(10L), any(), any());
+    }
+
+    @Test
+    void naoDevePublicarSeFormularioJaEstavaAtivo() {
+        UUID id = UUID.randomUUID();
+        Formulario formulario = new Formulario();
+        formulario.setStatus(StatusFormulario.ATIVO);
+        formulario.setIdEmpresa(10L);
+        formulario.setIdsUsuariosDestinatarios(List.of(101L));
+        when(authService.atual()).thenReturn(usuario);
+        when(repository.findByIdAndIdEmpresa(id, 10L)).thenReturn(Optional.of(formulario));
+        when(repository.save(formulario)).thenReturn(formulario);
+        when(mapper.toResponse(formulario)).thenReturn(mock(FormularioResponseDTO.class));
+
+        service.patch(id, Map.of("status", "ATIVO"));
+
+        verify(fcmApiClient, never()).publicarFormularioPublicado(any(), any(), any(), any());
+    }
+
+    @Test
+    void naoDevePublicarTransicaoSemDestinatarios() {
+        UUID id = UUID.randomUUID();
+        Formulario formulario = new Formulario();
+        formulario.setStatus(StatusFormulario.RASCUNHO);
+        formulario.setIdEmpresa(10L);
+        formulario.setIdsUsuariosDestinatarios(List.of());
+        when(authService.atual()).thenReturn(usuario);
+        when(repository.findByIdAndIdEmpresa(id, 10L)).thenReturn(Optional.of(formulario));
+        when(repository.save(formulario)).thenReturn(formulario);
+        when(mapper.toResponse(formulario)).thenReturn(mock(FormularioResponseDTO.class));
+
+        service.patch(id, Map.of("status", "ATIVO"));
+
+        verify(fcmApiClient, never()).publicarFormularioPublicado(any(), any(), any(), any());
     }
 
     private FormularioRequestDTO dto(TipoFormulario tipo, UUID idIshikawa) {
