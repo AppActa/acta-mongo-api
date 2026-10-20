@@ -1,0 +1,31 @@
+name: dataload
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dataload:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      URL_SEGUNDO_BANCO: ${{ secrets.URL_SEGUNDO_BANCO }}
+
+    steps:
+      - name: baixar código
+        uses: actions/checkout@v4
+
+      - name: preparar python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: instalar dependências
+        run: python -m pip install "psycopg[binary]" Faker pymongo
+
+      - name: carregar dados no MongoDB
+        run: python dataload.py
