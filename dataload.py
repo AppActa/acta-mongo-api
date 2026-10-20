@@ -82,13 +82,13 @@ anexos_por_ciclo = {}
 for anexo in anexos:
     anexos_por_ciclo.setdefault(anexo["id_ciclo"], anexo["id"])
 
-documentos = {
-    "ishikawas": [],
-    "cinco_porques": [],
-    "formularios": [],
-    "respostas_formulario": [],
-    "licoes_aprendidas": [],
-    "relatorios": [],
+contagens = {
+    "ishikawas": 0,
+    "cinco_porques": 0,
+    "formularios": 0,
+    "respostas_formulario": 0,
+    "licoes_aprendidas": 0,
+    "relatorios": 0,
 }
 
 categorias_ishikawa = [
@@ -99,6 +99,9 @@ categorias_ishikawa = [
     "MEDICAO",
     "MEIO_AMBIENTE",
 ]
+
+mongo = MongoClient(os.environ["MONGODB_URI"], uuidRepresentation="standard")
+database = mongo.get_default_database()
 
 for ciclo in ciclos:
     id_ciclo = ciclo["id"]
@@ -127,38 +130,40 @@ for ciclo in ciclos:
                 "descricao": causa["descricao"] or faker.sentence(),
             }
         )
-        documentos["cinco_porques"].append(
-            {
-                "_id": causa["id_5_porques_mongo"]
-                or id_estavel("cinco-porques", f"{id_ciclo}:{causa['id']}"),
-                "id_ishikawa": id_ishikawa,
-                "id_causa_ishikawa": id_causa,
-                "id_causa_raiz": causa["id"] if isinstance(causa["id"], int) else None,
-                "hipotese": faker.sentence(),
-                "porques": [
-                    {
-                        "ordem": ordem,
-                        "pergunta": faker.sentence(),
-                        "resposta": faker.sentence(),
-                    }
-                    for ordem in range(1, 6)
-                ],
-                "criado_em": causa["criado_em"] or criado_em,
-                "atualizado_em": causa["criado_em"] or criado_em,
-            }
-        )
-
-    documentos["ishikawas"].append(
-        {
-            "_id": id_ishikawa,
-            "id_empresa": ciclo["id_empresa"],
-            "id_ciclo": id_ciclo,
-            "problema": ciclo["problema"] or faker.sentence(),
-            "causas": causas_ishikawa,
-            "criado_em": criado_em,
-            "atualizado_em": criado_em,
+        documento = {
+            "_id": causa["id_5_porques_mongo"]
+            or id_estavel("cinco-porques", f"{id_ciclo}:{causa['id']}"),
+            "id_ishikawa": id_ishikawa,
+            "id_causa_ishikawa": id_causa,
+            "id_causa_raiz": causa["id"] if isinstance(causa["id"], int) else None,
+            "hipotese": faker.sentence(),
+            "porques": [
+                {
+                    "ordem": ordem,
+                    "pergunta": faker.sentence(),
+                    "resposta": faker.sentence(),
+                }
+                for ordem in range(1, 6)
+            ],
+            "criado_em": causa["criado_em"] or criado_em,
+            "atualizado_em": causa["criado_em"] or criado_em,
         }
-    )
+        database["cinco_porques"].replace_one(
+            {"_id": documento["_id"]}, documento, upsert=True
+        )
+        contagens["cinco_porques"] += 1
+
+    documento = {
+        "_id": id_ishikawa,
+        "id_empresa": ciclo["id_empresa"],
+        "id_ciclo": id_ciclo,
+        "problema": ciclo["problema"] or faker.sentence(),
+        "causas": causas_ishikawa,
+        "criado_em": criado_em,
+        "atualizado_em": criado_em,
+    }
+    database["ishikawas"].replace_one({"_id": id_ishikawa}, documento, upsert=True)
+    contagens["ishikawas"] += 1
 
     id_formulario = id_estavel("formulario", id_ciclo)
     perguntas = [
@@ -187,100 +192,97 @@ for ciclo in ciclos:
     usuarios = sorted(
         set(participantes_por_ciclo.get(id_ciclo, []) + [ciclo["id_responsavel"]])
     )
-    documentos["formularios"].append(
-        {
-            "_id": id_formulario,
-            "id_empresa": ciclo["id_empresa"],
-            "id_ciclo": id_ciclo,
-            "titulo": faker.sentence(nb_words=5),
-            "descricao": faker.paragraph(),
-            "tipo": "CHECKLIST",
-            "status": "ATIVO",
-            "perguntas": perguntas,
-            "id_ishikawa": id_ishikawa,
-            "ids_usuarios_destinatarios": usuarios,
-            "publicado_em": criado_em,
-            "criado_em": criado_em,
-            "atualizado_em": criado_em,
-        }
+    documento = {
+        "_id": id_formulario,
+        "id_empresa": ciclo["id_empresa"],
+        "id_ciclo": id_ciclo,
+        "titulo": faker.sentence(nb_words=5),
+        "descricao": faker.paragraph(),
+        "tipo": "CHECKLIST",
+        "status": "ATIVO",
+        "perguntas": perguntas,
+        "id_ishikawa": id_ishikawa,
+        "ids_usuarios_destinatarios": usuarios,
+        "publicado_em": criado_em,
+        "criado_em": criado_em,
+        "atualizado_em": criado_em,
+    }
+    database["formularios"].replace_one(
+        {"_id": id_formulario}, documento, upsert=True
     )
+    contagens["formularios"] += 1
 
     for id_usuario in usuarios:
-        documentos["respostas_formulario"].append(
-            {
-                "_id": id_estavel("resposta", f"{id_ciclo}:{id_usuario}"),
-                "id_empresa": ciclo["id_empresa"],
-                "id_ciclo": id_ciclo,
-                "id_formulario": id_formulario,
-                "id_usuario": id_usuario,
-                "respostas": [
-                    {"id_pergunta": pergunta["id_pergunta"], "resposta": resposta}
-                    for pergunta, resposta in zip(
-                        perguntas,
-                        [
-                            faker.sentence(),
-                            faker.boolean(),
-                            faker.random_element(perguntas[2]["opcoes"]),
-                        ],
-                    )
-                ],
-                "respondido_em": criado_em,
-            }
-        )
-
-    documentos["licoes_aprendidas"].append(
-        {
-            "_id": id_estavel("licao", id_ciclo),
-            "id_usuario": ciclo["id_responsavel"],
+        documento = {
+            "_id": id_estavel("resposta", f"{id_ciclo}:{id_usuario}"),
             "id_empresa": ciclo["id_empresa"],
             "id_ciclo": id_ciclo,
-            "titulo": faker.sentence(nb_words=5),
-            "licao": faker.paragraph(),
-            "tags": faker.words(nb=3),
-            "faseOrigem": faker.random_element(
-                ["PLANEJAMENTO", "EXECUCAO", "VERIFICACAO", "PADRONIZACAO"]
-            ),
-            "resultado": faker.paragraph(),
-            "severidade": faker.random_element(["BAIXA", "MEDIA", "ALTA"]),
-            "area": faker.job(),
-            "criado_em": criado_em,
-            "atualizado_em": criado_em,
+            "id_formulario": id_formulario,
+            "id_usuario": id_usuario,
+            "respostas": [
+                {"id_pergunta": pergunta["id_pergunta"], "resposta": resposta}
+                for pergunta, resposta in zip(
+                    perguntas,
+                    [
+                        faker.sentence(),
+                        faker.boolean(),
+                        faker.random_element(perguntas[2]["opcoes"]),
+                    ],
+                )
+            ],
+            "respondido_em": criado_em,
         }
+        database["respostas_formulario"].replace_one(
+            {"_id": documento["_id"]}, documento, upsert=True
+        )
+        contagens["respostas_formulario"] += 1
+
+    documento = {
+        "_id": id_estavel("licao", id_ciclo),
+        "id_usuario": ciclo["id_responsavel"],
+        "id_empresa": ciclo["id_empresa"],
+        "id_ciclo": id_ciclo,
+        "titulo": faker.sentence(nb_words=5),
+        "licao": faker.paragraph(),
+        "tags": faker.words(nb=3),
+        "faseOrigem": faker.random_element(
+            ["PLANEJAMENTO", "EXECUCAO", "VERIFICACAO", "PADRONIZACAO"]
+        ),
+        "resultado": faker.paragraph(),
+        "severidade": faker.random_element(["BAIXA", "MEDIA", "ALTA"]),
+        "area": faker.job(),
+        "criado_em": criado_em,
+        "atualizado_em": criado_em,
+    }
+    database["licoes_aprendidas"].replace_one(
+        {"_id": documento["_id"]}, documento, upsert=True
     )
+    contagens["licoes_aprendidas"] += 1
 
     status_relatorio = faker.random_element(["RASCUNHO", "CONCLUIDO", "PUBLICADO"])
-    documentos["relatorios"].append(
-        {
-            "_id": id_estavel("relatorio", id_ciclo),
-            "id_empresa": ciclo["id_empresa"],
-            "id_ciclo": id_ciclo,
-            "status": status_relatorio,
-            "tipo": faker.random_element(
-                [
-                    "RESUMO_EXECUTIVO",
-                    "CICLO_COMPLETO",
-                    "AVALIACAO_RESULTADOS",
-                    "PADRONIZACAO",
-                ]
-            ),
-            "formato": faker.random_element(["PDF", "PPTX"]),
-            "titulo": faker.sentence(nb_words=5),
-            "resumo": faker.paragraph(),
-            "conteudo": faker.text(max_nb_chars=2000),
-            "id_anexo": anexos_por_ciclo.get(id_ciclo),
-            "publicado_em": criado_em if status_relatorio == "PUBLICADO" else None,
-            "criado_em": criado_em,
-            "atualizado_em": criado_em,
-        }
+    documento = {
+        "_id": id_estavel("relatorio", id_ciclo),
+        "id_empresa": ciclo["id_empresa"],
+        "id_ciclo": id_ciclo,
+        "status": status_relatorio,
+        "tipo": faker.random_element(
+            ["RESUMO_EXECUTIVO", "CICLO_COMPLETO", "AVALIACAO_RESULTADOS", "PADRONIZACAO"]
+        ),
+        "formato": faker.random_element(["PDF", "PPTX"]),
+        "titulo": faker.sentence(nb_words=5),
+        "resumo": faker.paragraph(),
+        "conteudo": faker.text(max_nb_chars=2000),
+        "id_anexo": anexos_por_ciclo.get(id_ciclo),
+        "publicado_em": criado_em if status_relatorio == "PUBLICADO" else None,
+        "criado_em": criado_em,
+        "atualizado_em": criado_em,
+    }
+    database["relatorios"].replace_one(
+        {"_id": documento["_id"]}, documento, upsert=True
     )
+    contagens["relatorios"] += 1
 
-with MongoClient(os.environ["MONGODB_URI"], uuidRepresentation="standard") as mongo:
-    database = mongo.get_default_database()
-    for collection, registros in documentos.items():
-        for registro in registros:
-            database[collection].replace_one(
-                {"_id": registro["_id"]}, registro, upsert=True
-            )
+mongo.close()
 
-for collection, registros in documentos.items():
-    print(f"{collection}: {len(registros)}")
+for collection, quantidade in contagens.items():
+    print(f"{collection}: {quantidade}")
