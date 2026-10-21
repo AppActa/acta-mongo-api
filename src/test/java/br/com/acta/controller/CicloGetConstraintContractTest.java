@@ -22,24 +22,47 @@ class CicloGetConstraintContractTest {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             ExecutableValidator validator = factory.getValidator().forExecutables();
 
-            assertPositiveCycleContract(validator, FormularioOpenapi.class, FormularioController.class);
-            assertPositiveCycleContract(validator, IshikawaOpenapi.class, IshikawaController.class);
-            assertPositiveCycleContract(validator, LicaoAprendidaOpenapi.class, LicaoAprendidaController.class);
+            assertPositiveCycleContract(
+                    validator,
+                    FormularioOpenapi.class,
+                    FormularioController.class,
+                    new Class<?>[]{Long.class, boolean.class},
+                    new Object[]{1L, false}
+            );
+            assertPositiveCycleContract(
+                    validator,
+                    IshikawaOpenapi.class,
+                    IshikawaController.class,
+                    new Class<?>[]{Long.class},
+                    new Object[]{1L}
+            );
+            assertPositiveCycleContract(
+                    validator,
+                    LicaoAprendidaOpenapi.class,
+                    LicaoAprendidaController.class,
+                    new Class<?>[]{Long.class},
+                    new Object[]{1L}
+            );
         }
     }
 
     private void assertPositiveCycleContract(
             ExecutableValidator validator,
             Class<?> contractType,
-            Class<?> controllerType
+            Class<?> controllerType,
+            Class<?>[] parameterTypes,
+            Object[] validArguments
     ) throws Exception {
-        Method contractMethod = contractType.getMethod("buscar", Long.class);
-        Method implementationMethod = controllerType.getMethod("buscar", Long.class);
+        Method contractMethod = contractType.getMethod("buscar", parameterTypes);
+        Method implementationMethod = controllerType.getMethod("buscar", parameterTypes);
         assertTrue(contractMethod.getParameters()[0].isAnnotationPresent(Positive.class));
         assertFalse(implementationMethod.getParameters()[0].isAnnotationPresent(Positive.class));
 
         Object contractProbe = Proxy.newProxyInstance(contractType.getClassLoader(), new Class<?>[]{contractType}, (proxy, method, args) -> null);
-        assertEquals(0, validator.validateParameters(contractProbe, contractMethod, new Object[]{1L}).size());
-        assertEquals(1, validator.validateParameters(contractProbe, contractMethod, new Object[]{0L}).size());
+        assertEquals(0, validator.validateParameters(contractProbe, contractMethod, validArguments).size());
+
+        Object[] invalidArguments = validArguments.clone();
+        invalidArguments[0] = 0L;
+        assertEquals(1, validator.validateParameters(contractProbe, contractMethod, invalidArguments).size());
     }
 }
