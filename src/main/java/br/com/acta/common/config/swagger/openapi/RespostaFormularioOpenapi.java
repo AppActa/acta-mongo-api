@@ -31,7 +31,7 @@ public interface RespostaFormularioOpenapi {
     @ApiResponse(responseCode = "200", description = "Respostas encontradas", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RespostaFormularioResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@Parameter(description = "ID do formulário") UUID idFormulario, @Parameter(description = "ID do usuário que respondeu ao formulário") @RequestParam(name = "idUsuario", required = false) Long idUsuario);
+    ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@Parameter(description = "ID do formulário") UUID idFormulario, @Parameter(description = "Quando true, retorna apenas a resposta do usuário autenticado") @RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado);
 
     @Operation(summary = "Busca uma resposta de formulário")
     @ApiResponse(responseCode = "200", description = "Resposta encontrada", content = @Content(schema = @Schema(implementation = RespostaFormularioResponseDTO.class)))

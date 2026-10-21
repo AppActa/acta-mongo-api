@@ -108,12 +108,12 @@ class ControllerTest {
         UUID id = UUID.randomUUID();
         RespostaFormularioRequestDTO request = mock(RespostaFormularioRequestDTO.class);
         RespostaFormularioResponseDTO response = mock(RespostaFormularioResponseDTO.class);
-        when(service.buscarPorFormulario(formulario, null)).thenReturn(List.of(response));
+        when(service.buscarPorFormulario(formulario, false)).thenReturn(List.of(response));
         when(service.buscar(id)).thenReturn(response);
         when(service.inserir(formulario, request)).thenReturn(response);
         when(service.patch(id, Map.of())).thenReturn(response);
 
-        assertEquals(HttpStatus.OK, controller.buscar(formulario, null).getStatusCode());
+        assertEquals(HttpStatus.OK, controller.buscar(formulario, false).getStatusCode());
         assertEquals(response, controller.buscarPorId(id).getBody());
         assertEquals(HttpStatus.CREATED, controller.inserir(formulario, request).getStatusCode());
         assertEquals(response, controller.patch(id, Map.of()).getBody());

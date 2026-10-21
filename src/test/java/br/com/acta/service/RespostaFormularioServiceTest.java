@@ -86,6 +86,21 @@ class RespostaFormularioServiceTest {
     }
 
     @Test
+    void deveFiltrarRespostasPeloUsuarioAutenticadoQuandoSolicitado() {
+        UUID idFormulario = UUID.randomUUID();
+        Formulario formulario = formulario(idFormulario);
+        when(formularioService.getEntity(idFormulario)).thenReturn(formulario);
+        when(authService.atual()).thenReturn(usuario);
+        when(repository.buscarPorFormularioEUsuario(10L, 25L, idFormulario, 7L)).thenReturn(List.of());
+        when(mapper.toResponseList(List.of())).thenReturn(List.of());
+
+        assertEquals(List.of(), service.buscarPorFormulario(idFormulario, true));
+
+        verify(repository).buscarPorFormularioEUsuario(10L, 25L, idFormulario, 7L);
+        verify(repository, never()).findByIdEmpresaAndIdCicloAndIdFormularioOrderByRespondidoEmDesc(any(), any(), any());
+    }
+
+    @Test
     void devePreencherContextoEValidarRespostasAoInserir() {
         UUID idFormulario = UUID.randomUUID();
         Formulario formulario = formulario(idFormulario);
