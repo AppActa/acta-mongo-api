@@ -26,7 +26,7 @@ import java.util.UUID;
 @Tag(name = "Formulários", description = SwaggerOpenapiDescriptions.FORMULARIO_CONTROLLER)
 public interface FormularioOpenapi {
 
-    @Operation(summary = "Lista os formulários de um ciclo")
+    @Operation(summary = "Lista os formulários disponíveis para o usuário autenticado em um ciclo", description = "Retorna somente formulários publicados e destinados ao usuário autenticado. Formulários sem destinatários específicos ficam disponíveis para todos.")
     @ApiResponse(responseCode = "200", description = "Formulários encontrados", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FormularioResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse

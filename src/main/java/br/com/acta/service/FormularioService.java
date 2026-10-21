@@ -52,7 +52,7 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
         UsuarioAutenticado usuario = atual();
         validarCicloDaEmpresa(idCiclo, usuario.idEmpresa());
 
-        List<Formulario> formularios = repo.findByIdEmpresaAndIdCiclo(usuario.idEmpresa(), idCiclo);
+        List<Formulario> formularios = repo.findDisponiveisParaUsuario(usuario.idEmpresa(), idCiclo, usuario.idUsuario());
         return mapper.toResponseList(formularios);
     }
 

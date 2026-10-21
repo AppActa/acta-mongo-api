@@ -78,12 +78,12 @@ class FormularioServiceTest {
     void deveListarSomenteFormulariosDoCicloEDaEmpresaAutenticada() {
         when(authService.atual()).thenReturn(usuario);
         when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenReturn(ciclo(10L));
-        when(repository.findByIdEmpresaAndIdCiclo(10L, 25L)).thenReturn(List.of());
+        when(repository.findDisponiveisParaUsuario(10L, 25L, 7L)).thenReturn(List.of());
         when(mapper.toResponseList(List.of())).thenReturn(List.of());
 
         assertEquals(List.of(), service.buscarPorCiclo(25L));
 
-        verify(repository).findByIdEmpresaAndIdCiclo(10L, 25L);
+        verify(repository).findDisponiveisParaUsuario(10L, 25L, 7L);
     }
 
     @Test
@@ -92,7 +92,7 @@ class FormularioServiceTest {
         when(pgApiClient.buscarCiclo(eq(25L), nullable(String.class))).thenReturn(ciclo(99L));
 
         assertThrows(AccessDeniedException.class, () -> service.buscarPorCiclo(25L));
-        verify(repository, never()).findByIdEmpresaAndIdCiclo(any(), any());
+        verify(repository, never()).findDisponiveisParaUsuario(any(), any(), any());
     }
 
     @Test
