@@ -24,8 +24,8 @@ public class RespostaFormularioController implements RespostaFormularioOpenapi {
 
     @GetMapping("/formularios/{idFormulario}/respostas")
     @Override
-    public ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@PathVariable UUID idFormulario, @RequestParam(name = "idUsuario", required = false) Long idUsuario) {
-        List<RespostaFormularioResponseDTO> dtos = service.buscarPorFormulario(idFormulario, idUsuario);
+    public ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@PathVariable UUID idFormulario, @RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado) {
+        List<RespostaFormularioResponseDTO> dtos = service.buscarPorFormulario(idFormulario, apenasDoUsuarioAutenticado);
         return ResponseEntity.ok(dtos);
     }
 
