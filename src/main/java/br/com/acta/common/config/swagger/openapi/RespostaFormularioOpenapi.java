@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public interface RespostaFormularioOpenapi {
     @ApiResponse(responseCode = "200", description = "Respostas encontradas", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RespostaFormularioResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@Parameter(description = "ID do formulário") UUID idFormulario);
+    ResponseEntity<List<RespostaFormularioResponseDTO>> buscar(@Parameter(description = "ID do formulário") UUID idFormulario, @Parameter(description = "ID do usuário que respondeu ao formulário") @RequestParam(name = "idUsuario", required = false) Long idUsuario);
 
     @Operation(summary = "Busca uma resposta de formulário")
     @ApiResponse(responseCode = "200", description = "Resposta encontrada", content = @Content(schema = @Schema(implementation = RespostaFormularioResponseDTO.class)))

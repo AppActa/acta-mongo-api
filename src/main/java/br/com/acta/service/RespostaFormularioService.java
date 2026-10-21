@@ -52,8 +52,15 @@ public class RespostaFormularioService extends BaseService<RespostaFormularioReq
 
     @Transactional(readOnly = true)
     public List<RespostaFormularioResponseDTO> buscarPorFormulario(UUID idFormulario) {
+        return buscarPorFormulario(idFormulario, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RespostaFormularioResponseDTO> buscarPorFormulario(UUID idFormulario, Long idUsuario) {
         Formulario formulario = formularioService.getEntity(idFormulario);
-        List<RespostaFormulario> respostas = repo.findByIdEmpresaAndIdCicloAndIdFormularioOrderByRespondidoEmDesc(formulario.getIdEmpresa(), formulario.getIdCiclo(), idFormulario);
+        List<RespostaFormulario> respostas =
+                idUsuario == null ? repo.findByIdEmpresaAndIdCicloAndIdFormularioOrderByRespondidoEmDesc(formulario.getIdEmpresa(), formulario.getIdCiclo(), idFormulario)
+                : repo.buscarPorFormularioEUsuario(formulario.getIdEmpresa(), formulario.getIdCiclo(), idFormulario, idUsuario);
         return mapper.toResponseList(respostas);
     }
 
