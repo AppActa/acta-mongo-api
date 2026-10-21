@@ -25,8 +25,8 @@ public class FormularioController implements FormularioOpenapi {
 
     @GetMapping("/ciclos/{idCiclo}/formularios")
     @Override
-    public ResponseEntity<List<FormularioResponseDTO>> buscar(@PathVariable Long idCiclo) {
-        List<FormularioResponseDTO> dtos = service.buscarPorCiclo(idCiclo);
+    public ResponseEntity<List<FormularioResponseDTO>> buscar(@PathVariable Long idCiclo, @RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado) {
+        List<FormularioResponseDTO> dtos = service.buscarPorCiclo(idCiclo, apenasDoUsuarioAutenticado);
         return ResponseEntity.ok(dtos);
     }
 
