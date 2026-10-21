@@ -86,7 +86,6 @@ contagens = {
     "ishikawas": 0,
     "cinco_porques": 0,
     "formularios": 0,
-    "respostas_formulario": 0,
     "licoes_aprendidas": 0,
     "relatorios": 0,
 }
@@ -211,31 +210,6 @@ for ciclo in ciclos:
         {"_id": id_formulario}, documento, upsert=True
     )
     contagens["formularios"] += 1
-
-    for id_usuario in usuarios:
-        documento = {
-            "_id": id_estavel("resposta", f"{id_ciclo}:{id_usuario}"),
-            "id_empresa": ciclo["id_empresa"],
-            "id_ciclo": id_ciclo,
-            "id_formulario": id_formulario,
-            "id_usuario": id_usuario,
-            "respostas": [
-                {"id_pergunta": pergunta["id_pergunta"], "resposta": resposta}
-                for pergunta, resposta in zip(
-                    perguntas,
-                    [
-                        faker.sentence(),
-                        faker.boolean(),
-                        faker.random_element(perguntas[2]["opcoes"]),
-                    ],
-                )
-            ],
-            "respondido_em": criado_em,
-        }
-        database["respostas_formulario"].replace_one(
-            {"_id": documento["_id"]}, documento, upsert=True
-        )
-        contagens["respostas_formulario"] += 1
 
     documento = {
         "_id": id_estavel("licao", id_ciclo),
