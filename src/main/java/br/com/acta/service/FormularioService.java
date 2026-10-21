@@ -56,6 +56,17 @@ public class FormularioService extends BaseService<FormularioRequestDTO, Formula
         return mapper.toResponseList(formularios);
     }
 
+    @Transactional(readOnly = true)
+    public List<FormularioResponseDTO> buscarPorCiclo(Long idCiclo, boolean apenasDoUsuarioAutenticado) {
+        UsuarioAutenticado usuario = atual();
+        validarCicloDaEmpresa(idCiclo, usuario.idEmpresa());
+
+        List<Formulario> formularios = apenasDoUsuarioAutenticado
+                ? repo.findDestinadosParaUsuario(usuario.idEmpresa(), idCiclo, usuario.idUsuario())
+                : repo.findByIdEmpresaAndIdCiclo(usuario.idEmpresa(), idCiclo);
+        return mapper.toResponseList(formularios);
+    }
+
     @Transactional
     public FormularioResponseDTO inserir(Long idCiclo, FormularioRequestDTO dto) {
         UsuarioAutenticado usuario = atual();

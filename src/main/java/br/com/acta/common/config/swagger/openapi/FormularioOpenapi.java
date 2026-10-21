@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +27,11 @@ import java.util.UUID;
 @Tag(name = "Formulários", description = SwaggerOpenapiDescriptions.FORMULARIO_CONTROLLER)
 public interface FormularioOpenapi {
 
-    @Operation(summary = "Lista os formulários disponíveis para o usuário autenticado em um ciclo", description = "Retorna somente formulários publicados e destinados ao usuário autenticado. Formulários sem destinatários específicos ficam disponíveis para todos.")
+    @Operation(summary = "Lista formulários de um ciclo", description = "Retorna os formulários do ciclo da empresa do usuário autenticado. Quando apenasDoUsuarioAutenticado for true, retorna somente formulários publicados cuja lista de destinatários inclui esse usuário.")
     @ApiResponse(responseCode = "200", description = "Formulários encontrados", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FormularioResponseDTO.class))))
     @ApiAuthenticationResponses
     @ApiBadRequestResponse
-    ResponseEntity<List<FormularioResponseDTO>> buscar(@Parameter(description = "ID do ciclo") @Positive Long idCiclo);
+    ResponseEntity<List<FormularioResponseDTO>> buscar(@Parameter(description = "ID do ciclo") @Positive Long idCiclo, @Parameter(description = "Quando true, retorna somente formulários publicados explicitamente destinados ao usuário autenticado") @RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado);
 
     @Operation(summary = "Busca um formulário")
     @ApiResponse(responseCode = "200", description = "Formulário encontrado", content = @Content(schema = @Schema(implementation = FormularioResponseDTO.class)))
