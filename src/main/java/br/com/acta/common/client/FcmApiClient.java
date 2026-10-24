@@ -34,6 +34,12 @@ public class FcmApiClient {
         this.internalToken = internalToken;
     }
 
+    public boolean verificarSaude() {
+        try {
+            return restClientBuilder.build().get().uri("/health").retrieve().toBodilessEntity().getStatusCode().is2xxSuccessful();
+        } catch (RestClientException rce) { return false; }
+    }
+
     public void publicarFormularioPublicado(UUID idFormulario, Long idEmpresa, List<Long> destinatarios, Instant instante) {
         if (destinatarios == null || destinatarios.isEmpty()) return;
 
