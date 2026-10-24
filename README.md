@@ -6,7 +6,7 @@ API REST do ACTA para apoiar o ciclo **PDCA** (*Plan, Do, Check, Act*): organiza
 
 A API é a camada de persistência documental do ecossistema ACTA. Gerencia formulários, respostas de formulários, diagramas de Ishikawa, 5 Porquês e lições aprendidas em MongoDB. O repositório também contém modelos e contratos de relatório, ainda sem rotas HTTP.
 
-Clientes autenticam no Firebase e enviam o **Firebase ID Token** para consumir as rotas protegidas. A validação do usuário autenticado é delegada para a `acta-pg-api`, que concentra identidade, usuários, empresas e ciclos PDCA.
+Clientes autenticam no Firebase e enviam o **Firebase ID Token** para consumir as rotas protegidas. A validação do usuário autenticado é delegada para a `acta-auth-api`; a `acta-pg-api` fornece os ciclos PDCA.
 
 ## 🧩 Padrão de projeto: Template Method
 
@@ -29,7 +29,7 @@ O componente [`RespostaFormularioValidator`](src/main/java/br/com/acta/common/va
 - Diagramas de Ishikawa vinculados a ciclos.
 - Registros de 5 Porquês vinculados a Ishikawas.
 - Lições aprendidas por ciclo.
-- Health check da API e do banco em `GET /api/v1/health`.
+- Health check do MongoDB e das APIs PG, Auth e FCM em `GET /api/v1/health`.
 
 ## 🛠️ Tecnologias
 
@@ -48,7 +48,7 @@ Também utiliza Maven Wrapper, Lombok, Bean Validation, Caelum Stella e RestClie
 ## ✅ Pré-requisitos e configuração
 
 - JDK 19 e MongoDB acessível.
-- `acta-pg-api` acessível para validar o usuário autenticado e consultar dados relacionais como empresa, ciclo e usuário.
+- `acta-auth-api` acessível para obter o contexto autenticado e `acta-pg-api` acessível para consultar ciclos.
 - Projeto Firebase configurado no ecossistema ACTA, com clientes enviando Firebase ID Token.
 - Docker, caso a execução seja por imagem.
 
@@ -58,6 +58,7 @@ Defina as variáveis abaixo no ambiente ou em um `.env` local. Nunca versione se
 PORT=8081
 MONGODB_URI=mongodb://localhost:27017/acta_db
 ACTA_PG_API_BASE_URL=http://localhost:8080/api/v1/
+ACTA_AUTH_API_BASE_URL=http://localhost:8080/api/v1/
 ACTA_PG_API_CONNECT_TIMEOUT=3s
 ACTA_PG_API_READ_TIMEOUT=5s
 ```
@@ -66,7 +67,9 @@ ACTA_PG_API_READ_TIMEOUT=5s
 | --- | --- |
 | `PORT` | Porta HTTP da aplicação |
 | `MONGODB_URI` | Conexão MongoDB |
-| `ACTA_PG_API_BASE_URL` | URL base da API PostgreSQL usada para autenticação delegada e validações relacionais |
+| `ACTA_PG_API_BASE_URL` | URL base da API PostgreSQL usada para validar ciclos |
+| `ACTA_AUTH_API_BASE_URL` | URL base obrigatória da Auth API, incluindo `/api/v1/`; pode usar host/porta diferentes da PG |
+| `ACTA_AUTH_API_CONNECT_TIMEOUT`, `ACTA_AUTH_API_READ_TIMEOUT` | Timeouts opcionais da Auth; padrões `3s` e `5s` |
 | `ACTA_PG_API_CONNECT_TIMEOUT` | Timeout opcional de conexão com a API PostgreSQL |
 | `ACTA_PG_API_READ_TIMEOUT` | Timeout opcional de leitura da API PostgreSQL |
 | `ACTA_VIACEP_BASE_URL` | Integração usada por perguntas de CEP; padrão `https://viacep.com.br/ws/` |
@@ -75,7 +78,7 @@ ACTA_PG_API_READ_TIMEOUT=5s
 
 O [`.env.example`](.env.example) é somente uma referência; Spring Boot não carrega `.env` automaticamente sem configuração externa.
 
-Para execução pelo Maven, exporte as variáveis no terminal. A URL da API PostgreSQL deve incluir o prefixo das rotas e a barra final, como `/api/v1/`. Os padrões estão em [`application.properties`](src/main/resources/application.properties); a consulta de perguntas de CEP exige acesso ao ViaCEP.
+Para execução pelo Maven, exporte as variáveis no terminal. As URLs das APIs PostgreSQL e Auth devem incluir o prefixo das rotas e a barra final, como `/api/v1/`. Os padrões estão em [`application.properties`](src/main/resources/application.properties); a consulta de perguntas de CEP exige acesso ao ViaCEP.
 
 ## 🚀 Execução local
 
@@ -98,7 +101,7 @@ docker build -t acta-mongo-api .
 docker run --rm -p 8081:8081 --env-file .env acta-mongo-api
 ```
 
-Antes de executar em contêiner, crie o `.env` com as variáveis de configuração e use endereços do MongoDB e da `acta-pg-api` acessíveis a partir dele: `localhost` dentro do contêiner se refere ao próprio contêiner. O mapeamento `8081:8081` considera `PORT=8081`; ajuste-o caso configure outra porta.
+Antes de executar em contêiner, crie o `.env` com as variáveis de configuração e use endereços do MongoDB, da `acta-pg-api` e da `acta-auth-api` acessíveis a partir dele: `localhost` dentro do contêiner se refere ao próprio contêiner. O mapeamento `8081:8081` considera `PORT=8081`; ajuste-o caso configure outra porta.
 
 ## 📚 Documentação e autenticação
 
@@ -107,7 +110,7 @@ Antes de executar em contêiner, crie o `.env` com as variáveis de configuraç�
 - Público: `GET /api/v1/health`, Swagger UI e OpenAPI.
 - Demais rotas: `Authorization: Bearer <FIREBASE_ID_TOKEN>`.
 
-Após o login Firebase, envie o Firebase ID Token no cabeçalho `Authorization`. A API repassa esse token para `GET /api/v1/me` da `acta-pg-api` e usa o contexto retornado para autenticar a requisição.
+Após o login Firebase, envie o Firebase ID Token no cabeçalho `Authorization`. A API repassa esse token para `GET /api/v1/contexto` da `acta-auth-api` e usa o contexto retornado para autenticar a requisição.
 
 > Custom token, refresh token e senha **não** são Firebase ID Tokens e não devem ser usados no cabeçalho `Authorization`.
 
@@ -154,13 +157,18 @@ curl -X POST http://localhost:8081/api/v1/ciclos/1/formularios \
   }'
 ```
 
+O health consulta o MongoDB e os health checks da PG e da Auth (`health`, relativo às bases `/api/v1/`) e da FCM (`/health`). Usa os timeouts dos clientes existentes. Retorna `200` quando todos estão `UP`; se algum falhar ou expirar, retorna `503` com os estados individuais. Não envia tokens nessas consultas públicas.
+
 Resposta de saúde, com dados fictícios:
 
 ```json
 {
   "status": "UP",
   "banco": "UP",
-  "mensagem": "O CATO verificou: a API e o banco estão funcionando!",
+  "pg": "UP",
+  "auth": "UP",
+  "fcm": "UP",
+  "mensagem": "O CATO verificou: a API, o banco, a PG, a Auth e a FCM estão funcionando!",
   "verificadoEm": "2026-09-17T10:30:00-03:00"
 }
 ```
@@ -196,7 +204,7 @@ O formato confirmado é:
 - `dto/` e `dto/mapper/`: contratos e mapeamento MapStruct.
 - `common/`: segurança, validação, Strategy de respostas, patch, clients de integração e erros.
 
-A API é stateless. `common/config/security/SecurityConfig.java` registra `ActaPgApiAuthFilter`, enquanto `PgApiClient` consulta a `acta-pg-api` para validar o token recebido e obter o usuário autenticado. `AuthService` e `@PreAuthorize` nos serviços aplicam a exigência de autenticação nas operações protegidas. `RespostaFormularioValidator` aplica Strategy para selecionar a validação correta conforme o tipo de resposta.
+A API é stateless. `common/config/security/SecurityConfig.java` registra `ActaAuthApiFilter`, enquanto `AuthApiClient` consulta a `acta-auth-api` para validar o token recebido e obter o contexto autenticado; `PgApiClient` mantém as consultas de ciclos na `acta-pg-api`. `AuthService` e `@PreAuthorize` nos serviços aplicam a exigência de autenticação nas operações protegidas. `RespostaFormularioValidator` aplica Strategy para selecionar a validação correta conforme o tipo de resposta.
 
 ## 📁 Estrutura
 

@@ -1,6 +1,6 @@
 package br.com.acta.common.config.security;
 
-import br.com.acta.common.client.PgApiClient;
+import br.com.acta.common.client.AuthApiClient;
 import br.com.acta.common.handler.ErroResponse;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,12 +30,12 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     @Bean
-    public ActaPgApiAuthFilter filter(PgApiClient client, ObjectMapper mapper) {
-        return new ActaPgApiAuthFilter(client, mapper);
+    public ActaAuthApiFilter filter(AuthApiClient client, ObjectMapper mapper) {
+        return new ActaAuthApiFilter(client, mapper);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ActaPgApiAuthFilter filter, ObjectMapper mapper) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ActaAuthApiFilter filter, ObjectMapper mapper) {
         return http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .cors(Customizer.withDefaults())

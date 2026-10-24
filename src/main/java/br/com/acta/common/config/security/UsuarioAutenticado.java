@@ -32,6 +32,6 @@ public record UsuarioAutenticado(
 
     @Override
     public String getName() {
-        return firebaseUid;
+        return firebaseUid != null ? firebaseUid : idUsuario.toString();
     }
 }

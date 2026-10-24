@@ -24,7 +24,7 @@ public final class SwaggerOpenapiDescriptions {
             """;
 
     public static final String HEALTH_CONTROLLER = """
-            Endpoint responsável por verificar a disponibilidade da API e do banco MongoDB.
+            Endpoint responsável por verificar MongoDB e os health checks das APIs PG, Auth e FCM.
             """;
 
     public static final String ISHIKAWA_CONTROLLER = """
