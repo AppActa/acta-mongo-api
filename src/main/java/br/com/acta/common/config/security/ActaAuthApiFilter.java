@@ -1,8 +1,8 @@
 package br.com.acta.common.config.security;
 
-import br.com.acta.common.client.PgApiClient;
+import br.com.acta.common.client.AuthApiClient;
 import br.com.acta.common.handler.ErroResponse;
-import br.com.acta.common.handler.exception.PgApiException;
+import br.com.acta.common.handler.exception.AuthApiException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,8 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class ActaPgApiAuthFilter extends OncePerRequestFilter {
-    private final PgApiClient client;
+public class ActaAuthApiFilter extends OncePerRequestFilter {
+    private final AuthApiClient client;
     private final ObjectMapper mapper;
 
     @Override
@@ -57,9 +57,9 @@ public class ActaPgApiAuthFilter extends OncePerRequestFilter {
         } catch (AccessDeniedException ade) {
             SecurityContextHolder.clearContext();
             responderErro(response, HttpStatus.FORBIDDEN, "Acesso negado");
-        } catch (PgApiException pae) {
+        } catch (AuthApiException aae) {
             SecurityContextHolder.clearContext();
-            responderErro(response, HttpStatus.SERVICE_UNAVAILABLE, pae.getMessage());
+            responderErro(response, HttpStatus.SERVICE_UNAVAILABLE, aae.getMessage());
         }
     }
 

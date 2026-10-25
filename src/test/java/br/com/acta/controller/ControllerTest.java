@@ -125,8 +125,8 @@ class ControllerTest {
     void deveTraduzirStatusDoHealth() {
         HealthService service = mock(HealthService.class);
         HealthController controller = new HealthController(service);
-        HealthResponseDTO up = new HealthResponseDTO(HealthStatus.UP, HealthStatus.UP, "ok", OffsetDateTime.now());
-        HealthResponseDTO down = new HealthResponseDTO(HealthStatus.DOWN, HealthStatus.DOWN, "erro", OffsetDateTime.now());
+        HealthResponseDTO up = new HealthResponseDTO(HealthStatus.UP, HealthStatus.UP, HealthStatus.UP, HealthStatus.UP, HealthStatus.UP, "ok", OffsetDateTime.now());
+        HealthResponseDTO down = new HealthResponseDTO(HealthStatus.DOWN, HealthStatus.DOWN, HealthStatus.UP, HealthStatus.UP, HealthStatus.UP, "erro", OffsetDateTime.now());
         when(service.verificar()).thenReturn(up, down);
         assertEquals(HttpStatus.OK, controller.verificar().getStatusCode());
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, controller.verificar().getStatusCode());

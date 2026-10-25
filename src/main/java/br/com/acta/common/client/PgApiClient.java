@@ -1,16 +1,14 @@
 package br.com.acta.common.client;
 
-import br.com.acta.common.config.security.UsuarioAutenticado;
 import br.com.acta.common.handler.exception.PgApiException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -37,6 +35,14 @@ public class PgApiClient {
         this.objectMapper = objectMapper;
     }
 
+    public boolean verificarSaude() {
+        try {
+            return restClient.get().uri("health").retrieve().toBodilessEntity().getStatusCode().is2xxSuccessful();
+        } catch (RestClientException rce) {
+            return false;
+        }
+    }
+
     public CicloPgResponse buscarCiclo(Long idCiclo, String authorization) {
         validarId(idCiclo);
 
@@ -50,27 +56,6 @@ public class PgApiClient {
             if (ciclo == null) throw new PgApiException();
             return ciclo;
         } catch (RestClientResponseException rcre) {
-            throw traduzirErro(rcre);
-        } catch (ResourceAccessException rae) {
-            throw new PgApiException("Não foi possível acessar a API PostgreSQL");
-        }
-    }
-
-    public UsuarioAutenticado buscarUsuarioAtual(String authorization) {
-        try {
-            UsuarioAutenticado usuario = restClient.get().uri("me")
-                    .header(HttpHeaders.AUTHORIZATION, authorization)
-                    .retrieve().body(UsuarioAutenticado.class);
-
-            if (usuario == null) throw new PgApiException();
-            return usuario;
-        } catch (RestClientResponseException rcre) {
-            if (rcre.getStatusCode().value() == 401)
-                throw new BadCredentialsException("O ID Token do Firebase não existe ou está inválido");
-
-            if (rcre.getStatusCode().value() == 403)
-                throw new AccessDeniedException("Acesso negado");
-
             throw traduzirErro(rcre);
         } catch (ResourceAccessException rae) {
             throw new PgApiException("Não foi possível acessar a API PostgreSQL");
