@@ -23,6 +23,13 @@ import java.util.UUID;
 public class LicaoAprendidaController implements LicaoAprendidaOpenapi {
     private final LicaoAprendidaService service;
 
+    @GetMapping("/licoes-aprendidas")
+    @Override
+    public ResponseEntity<List<LicaoAprendidaResponseDTO>> buscarTodas(@RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado) {
+        List<LicaoAprendidaResponseDTO> dtos = service.buscarTodas(apenasDoUsuarioAutenticado);
+        return ResponseEntity.ok(dtos);
+    }
+
     @GetMapping("/ciclos/{idCiclo}/licoes-aprendidas")
     @Override
     public ResponseEntity<List<LicaoAprendidaResponseDTO>> buscar(@PathVariable Long idCiclo) {

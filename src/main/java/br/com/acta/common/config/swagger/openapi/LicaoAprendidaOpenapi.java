@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,11 @@ import java.util.UUID;
 
 @Tag(name = "Lições aprendidas", description = SwaggerOpenapiDescriptions.LICAO_APRENDIDA_CONTROLLER)
 public interface LicaoAprendidaOpenapi {
+
+    @Operation(summary = "Lista as lições aprendidas da empresa do usuário autenticado")
+    @ApiResponse(responseCode = "200", description = "Lições aprendidas encontradas", content = @Content(array = @ArraySchema(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class))))
+    @ApiAuthenticationResponses
+    ResponseEntity<List<LicaoAprendidaResponseDTO>> buscarTodas(@Parameter(description = "Quando true, retorna somente as lições criadas pelo usuário autenticado") @RequestParam(name = "apenasDoUsuarioAutenticado", defaultValue = "false") boolean apenasDoUsuarioAutenticado);
 
     @Operation(summary = "Lista as lições aprendidas de um ciclo")
     @ApiResponse(responseCode = "200", description = "Lições aprendidas encontradas", content = @Content(array = @ArraySchema(schema = @Schema(implementation = LicaoAprendidaResponseDTO.class))))
