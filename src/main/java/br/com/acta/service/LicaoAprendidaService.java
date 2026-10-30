@@ -47,6 +47,15 @@ public class LicaoAprendidaService extends BaseService<LicaoAprendidaRequestDTO,
         return mapper.toResponseList(licoes);
     }
 
+    @Transactional(readOnly = true)
+    public List<LicaoAprendidaResponseDTO> buscarTodas(boolean apenasDoUsuarioAutenticado) {
+        UsuarioAutenticado usuario = atual();
+        List<LicaoAprendida> licoes = apenasDoUsuarioAutenticado
+                ? repo.findByIdEmpresaAndIdUsuarioOrderByCriadoEmDesc(usuario.idEmpresa(), usuario.idUsuario())
+                : repo.findByIdEmpresaOrderByCriadoEmDesc(usuario.idEmpresa());
+        return mapper.toResponseList(licoes);
+    }
+
     @Transactional
     public LicaoAprendidaResponseDTO inserir(Long idCiclo, LicaoAprendidaRequestDTO dto) {
         UsuarioAutenticado usuario = atual();
