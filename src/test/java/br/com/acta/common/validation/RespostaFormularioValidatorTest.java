@@ -65,7 +65,7 @@ class RespostaFormularioValidatorTest {
 
     @Test
     void deveRejeitarTipoSemStrategyImplementada() {
-        formulario.getPerguntas().get(0).setTipo(TipoResposta.ARQUIVO);
+        formulario.getPerguntas().get(0).setTipo(TipoResposta.EMAIL);
         assertThrows(InvalidRequestException.class,
                 () -> validator.validar(formulario, List.of(new RespostaPerguntaRequestDTO(idPergunta, "arquivo"))));
     }
