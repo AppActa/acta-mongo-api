@@ -12,6 +12,5 @@ public enum TipoResposta {
     TELEFONE,
     SIM_NAO,
     CPF,
-    ARQUIVO,
     CEP
 }
